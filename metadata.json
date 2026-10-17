@@ -1,0 +1,6 @@
+{
+  "name": "YAZAROTA",
+  "description": "YAZAROTA — Lise öğrencileri için yapay zekâ destekli yaratıcı yazma, edebî tür rehberi ve TÜBİTAK 2204-A araştırma platformu.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
