@@ -57,7 +57,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         <div className="relative z-10 max-w-3xl space-y-6">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-300 text-xs font-semibold tracking-wide">
             <Sparkles className="w-3.5 h-3.5 text-teal-400" />
-            <span>YAZAROTA — Lise Yaratıcı Yazarlık Platformu</span>
+            <span>YAZAROTA — Yaratıcı Yazarlık Platformu</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight font-display leading-tight text-slate-100">
@@ -83,11 +83,19 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </button>
 
             <button
+              onClick={() => onNavigateTab('magazine')}
+              className="inline-flex items-center gap-2 px-5 py-3.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-cyan-300 text-sm font-semibold border border-teal-500/40 hover:border-teal-400 transition-all cursor-pointer"
+            >
+              <BookOpen className="w-4 h-4 text-cyan-400" />
+              <span>Genç Kalemler Dergisini Oku</span>
+            </button>
+
+            <button
               onClick={() => onNavigateTab('guide')}
               className="inline-flex items-center gap-2 px-5 py-3.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 text-sm font-semibold border border-slate-700 hover:border-slate-600 transition-all cursor-pointer"
             >
               <BookOpen className="w-4 h-4 text-teal-400" />
-              <span>Edebiyat Rehberini Keşfet</span>
+              <span>Edebiyat Rehberi</span>
             </button>
 
             {savedStoriesCount > 0 && (
@@ -106,7 +114,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         <div className="mt-12 pt-8 border-t border-slate-800/80 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs text-slate-400">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-teal-400 shrink-0" />
-            <span>20+ Mekân & 20+ Karakter</span>
+            <span>20+ Mekân & Karakter</span>
           </div>
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-teal-400 shrink-0" />
@@ -114,11 +122,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </div>
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-teal-400 shrink-0" />
-            <span>Gemini 3.8 Flash Rubriği</span>
+            <span>10 Ölçütlü Analitik Rubrik</span>
           </div>
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-teal-400 shrink-0" />
-            <span>TÜBİTAK 2204-A Modu</span>
+            <span>Genç Kalemler Okul Dergisi</span>
           </div>
         </div>
       </section>

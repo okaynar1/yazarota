@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Award,
   Sparkles,
@@ -13,8 +13,11 @@ import {
   Info,
   GitCompare,
   Edit,
+  Cloud,
+  FileCheck,
 } from 'lucide-react';
 import { AIReview, Story, StoryVersion } from '../types';
+import { WordCloudView } from './WordCloudView';
 
 interface EvaluationViewProps {
   review: AIReview;
@@ -31,6 +34,8 @@ export const EvaluationView: React.FC<EvaluationViewProps> = ({
   onBackToEditor,
   onCompareVersions,
 }) => {
+  const [activeTab, setActiveTab] = useState<'report' | 'wordcloud'>('report');
+
   const currentVersion =
     story.versions.find((v) => v.review?.id === review.id) ||
     story.versions[story.versions.length - 1];
@@ -87,8 +92,39 @@ export const EvaluationView: React.FC<EvaluationViewProps> = ({
         </div>
       </div>
 
-      {/* 1. Genel Değerlendirme & Toplam Puan Hero */}
-      <div className="bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white rounded-3xl p-6 sm:p-8 border border-slate-800 shadow-xl relative overflow-hidden">
+      {/* Main Tab Navigation: Değerlendirme Raporu vs. Kelime Bulutu */}
+      <div className="flex items-center gap-2 border-b border-slate-200 pb-1">
+        <button
+          onClick={() => setActiveTab('report')}
+          className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+            activeTab === 'report'
+              ? 'bg-slate-900 text-white shadow-md'
+              : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+          }`}
+        >
+          <Sparkles className="w-4 h-4 text-teal-400" />
+          <span>Rubrik Değerlendirme Raporu</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('wordcloud')}
+          className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+            activeTab === 'wordcloud'
+              ? 'bg-teal-700 text-white shadow-md shadow-teal-700/20'
+              : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+          }`}
+        >
+          <Cloud className="w-4 h-4 text-teal-600" />
+          <span>Kelime Bulutu & Sözcük Analizi</span>
+        </button>
+      </div>
+
+      {activeTab === 'wordcloud' ? (
+        <WordCloudView story={story} initialVersionNumber={currentVersion?.versionNumber} />
+      ) : (
+        <>
+          {/* 1. Genel Değerlendirme & Toplam Puan Hero */}
+          <div className="bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white rounded-3xl p-6 sm:p-8 border border-slate-800 shadow-xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-80 h-80 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 relative z-10">
@@ -131,7 +167,7 @@ export const EvaluationView: React.FC<EvaluationViewProps> = ({
               Rubrik Ölçütleri ve Gerekçeleri
             </h3>
           </div>
-          <span className="text-xs text-slate-500">7 Ayrı Ölçüt</span>
+          <span className="text-xs text-slate-500">{review.criteriaScores?.length || 7} Ayrı Ölçüt</span>
         </div>
 
         <div className="space-y-4">
@@ -299,6 +335,8 @@ export const EvaluationView: React.FC<EvaluationViewProps> = ({
           <ArrowRight className="w-4 h-4" />
         </button>
       </div>
+        </>
+      )}
     </div>
   );
 };

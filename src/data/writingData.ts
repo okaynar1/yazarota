@@ -61,6 +61,26 @@ export const GENRES: GenreInfo[] = [
     bgGradient: 'from-blue-600 to-indigo-800',
     accentBorder: 'border-blue-400',
   },
+  {
+    id: 'siir',
+    title: 'Şiir',
+    badge: 'Duygu & İmge',
+    shortDesc: 'Duygu, düşünce ve hayallerin ritim, ahenk, özgün imgeler ve dizelerle estetik bir dille aktarıldığı edebî tür.',
+    iconName: 'Feather',
+    colorClass: 'text-violet-700 bg-violet-50 border-violet-200',
+    bgGradient: 'from-violet-600 to-indigo-800',
+    accentBorder: 'border-violet-400',
+  },
+  {
+    id: 'fabl',
+    title: 'Fabl',
+    badge: 'Kişileştirme & İbret',
+    shortDesc: 'Hayvanların veya kişileştirilmiş varlıkların başından geçen olaylarla insana ve topluma dair ibretli dersler veren anlatı.',
+    iconName: 'Sparkles',
+    colorClass: 'text-emerald-700 bg-emerald-50 border-emerald-200',
+    bgGradient: 'from-emerald-600 to-teal-800',
+    accentBorder: 'border-emerald-400',
+  },
 ];
 
 // En az 20 Farklı Mekân Havuzu
@@ -163,7 +183,63 @@ export const SURPRISE_CARDS_POOL: string[] = [
   'Verilen süre dolmak üzeredir; karakterin kritik kararı vermek için yalnızca on nefeslik zamanı kalmıştır.',
 ];
 
-// Edebiyat Rehberi Kapsamlı İçerikleri (6 Tür)
+// Şiir Türü İçin Tema / Duygu / Lirik Özne Havuzu
+export const POETRY_THEMES_POOL: string[] = [
+  'Tema: Yalnızlık ve kentin yabancılaşması (Lirik Anlatıcı)',
+  'Tema: Baharın uyanışı ve içsel umut (Coşkulu Şair Sesi)',
+  'Tema: Zamanın su gibi akıp gitmesi ve fanilik',
+  'Tema: Gurbet, sıla hasreti ve çocukluk anıları',
+  'Tema: Özgürlük tutkusu ve sınırları aşma arzusu',
+  'Tema: Gece yarısı yağan yağmurun çağrıştırdığı hüzün',
+  'Tema: İnsan emeğinin onuru ve alın teri',
+  'Tema: Denizin sonsuzluğu ve bilinmeze duyulan merak',
+  'Tema: Kayıp bir dosta duyulan vefalı özlem',
+  'Tema: Sessizliğin içindeki derin fısıltılar ve vicdan',
+  'Tema: Gençliğin deli dolu rüyaları ve geleceği arayış',
+  'Tema: Sonbahar rüzgârında dökülen hatıralar',
+];
+
+// Şiir Türü İçin İmge ve Sürpriz Kırılma Havuzu
+export const POETRY_IMAGES_POOL: string[] = [
+  'İmge: Kırık bir ayna gibi parçalanan bulutlar ve yağmurun sesi',
+  'İmge: Ceplerinde sararmış sonbahar yaprakları biriktiren yalnız rüzgâr',
+  'İmge: Gecenin göğsüne saplanmış bir hançer gibi parlayan kutup yıldızı',
+  'İmge: Kentin üzerinde asılı duran paslı bir yalnızlık çanı',
+  'İmge: Maviye boyanmış eski bir tahta sandıkta unutulan çocukluk rüyası',
+  'İmge: Kaldırım taşlarının arasından inatla boy veren mor bir kasımpatı',
+  'İmge: Boş bir tren peronunda rüzgârla savrulan sararmış bilet koçanı',
+  'İmge: Zamanın kum saatinden süzülen soluk fısıltılar',
+];
+
+// Fabl Türü İçin Karakter (Kişileştirilmiş Hayvan / Varlık) Havuzu
+export const FABL_CHARACTERS_POOL: string[] = [
+  'Kurnaz ve hazırcevap kızıl tilki ile alçakgönüllü kirpi',
+  'Kendi gölgesinden bile korkan ama dostları için cesaret toplayan genç tavşan',
+  'Ormanın en tepesindeki meşe dalında yaşayan bilge ve gözlüklü baykuş',
+  'Kibrinden ötürü kimseye selam vermeyen mağrur kartal',
+  'Sabrıyla kayaları bile delen ihtiyar kaplumbağa',
+  'Yaz boyunca durmaksızın kışa hazırlık yapan çalışkan karınca',
+  'Başkalarının sesini taklit etmekten kendi sesini unutan geveze papağan',
+  'Ormanın kıyısındaki asırlık ulu çınar ile yanındaki narin kamış',
+  'Yalnızca kendi güzelliğine hayran olan renkli tavus kuşu',
+  'Kendi gücüne güvenip hilekârlık yapan kurt ile uyanık çoban köpeği',
+  'Aslanın pençesinden kurtulup bir gün ona yardım eden küçük fare',
+  'Ağzındaki peyniri tilkiye kaptırmamak için direnen karga',
+];
+
+// Fabl Türü İçin Çatışma & Çıkarılacak Ders (Katalizör) Havuzu
+export const FABL_LESSONS_POOL: string[] = [
+  'Çatışma & Ders: Aşırı kibir ve böbürlenme, en beklenmedik anda kişiyi gülünç duruma düşürür.',
+  'Çatışma & Ders: Birlikten kuvvet doğar; tek bir dalı kırmak kolaydır ama demeti kırmak imkânsızdır.',
+  'Çatışma & Ders: Tatlı dille söylenen sahte iltifatlara aldanan, elindeki lokmadan da olur.',
+  'Çatışma & Ders: Görünüşe aldanmamak gerekir; en küçük ve sessiz varlıklar bile büyük işler başarabilir.',
+  'Çatışma & Ders: Öfkeyle kalkan zararla oturur; sabır ve akıl kaba kuvveti her zaman yener.',
+  'Çatışma & Ders: Dost kara günde belli olur; zorluk anında kaçan dostluk iddiasında bulunamaz.',
+  'Çatışma & Ders: Emeksiz kazanılan şeyin bereketi olmaz; alın teri her hileden değerlidir.',
+  'Çatışma & Ders: Başkasına çukur kazan, gün gelir kendisi o çukura düşer.',
+];
+
+// Edebiyat Rehberi Kapsamlı İçerikleri (8 Tür)
 export const LITERATURE_GUIDES: LiteratureGuideItem[] = [
   {
     id: 'hikaye',
@@ -379,6 +455,78 @@ export const LITERATURE_GUIDES: LiteratureGuideItem[] = [
       'Yazarken kendinizi yargılamayın; ilk aklınıza gelen hissi filtrelemeden dökün.',
       'Tarihin yanına hava durumunu veya o an çalan bir şarkının adını not düşmek nostaljiyi artırır.',
       'Kendinize cesaret veren cümlelerle bitirin; günlük aynı zamanda bir sığınaktır.',
+    ],
+  },
+  {
+    id: 'siir',
+    title: 'Şiir Yazma Rehberi',
+    subtitle: 'Sözcüklerin musikisi: Duygu, imge ve dize ustalığı',
+    definition: 'Şiir; duygu, düşünce ve hayallerin ses uyumu, ritim, çağrışım ve özgün imgelerle yoğrulup dizeler hâlinde dile getirildiği en eski ve en derin edebî sanat türüdür.',
+    keyFeatures: [
+      'Özgün imgeler ve metaforlarla zenginleştirilmiş çağrışım dünyası',
+      'Dize (mısra) ve bent/kıta düzeni; sözcük ekonomisi (az sözle çok şey anlatma)',
+      'Ritim, ses tekrarları (aliterasyon, asonans) veya serbest dize ahengi',
+      'Ölçü ve uyak tercihe bağlıdır; serbest şiirde iç ahenk ve imge derinliği esastır',
+      'Lirik, epik, didaktik veya pastoral duygu tonları',
+    ],
+    structure: [
+      '1. Çıkış Noktası (Esin & Tema): Şiiri başlatan bir duygu, an, görsel veya felsefi bir sorgulama.',
+      '2. Dizelerin İnşası: İmgenin somutlaştırılması, duyusal çağrışımların dizeye dökülmesi.',
+      '3. Ritim ve Ahenk Akışı: Kelimelerin yan yana gelişindeki ses uyumu, duraklar ve nefes.',
+      '4. Vurucu Kapanış: Okurun zihninde yankılanan, duygu yoğunluğunu zirveye taşıyan son dize.',
+    ],
+    watchOutTips: [
+      'Şiiri düzyazı gibi cümle cümle alt alta yazmaktan kaçının; her dize kendi başına bir ağırlık taşımalıdır.',
+      'Uyak (kafiye) tutturmak uğruna yapay veya anlamsız kelimeleri dize sonuna sıkıştırmayın; serbest şiirde samimiyet ve imge daha değerlidir.',
+      'Aşırı soyut ve anlaşılmaz sözcük yığınları yerine, okurun kalbine dokunan somut duyusal imgeler (yağmur kokusu, ıslak kaldırım, soluk fener) seçin.',
+    ],
+    guidingQuestions: [
+      'Bu şiirde okura hissettirmek istediğim en baskın duygu (özlem, coşku, dinginlik, umut) ne?',
+      'Seçtiğim imge klişe mi yoksa bana ait özgün bir benzetme mi?',
+      'Şiiri yüksek sesle okuduğumda kulağa takılan, ritmi bozan bir kelime var mı?',
+    ],
+    sampleTitle: 'Geceye Düşen Yağmur Damlası',
+    sampleExcerpt: 'Penceremde unutulmuş bir eylül serinliği,\nKaldırımlarda koşturan sarı yapraklar...\nSessizlik, eski bir saatin sarkaç sesinde çoğalır,\nVe lambanın sarı ışığında\nCeplerimde biriktirdiğim çocukluk düşleri ıslanır.\nBir tren düdüğü yırtar gecenin tülünü,\nKelimeler susar, hatıralar konuşur.',
+    writingAdvice: [
+      'Şiirini bitirdikten sonra mutlaka sesli oku; diline takılan yerleri dizeyi sadeleştirerek düzelt.',
+      'Gereksiz bağlaçları ve sıfatları ayıkla; şiir sözcük tasarrufudur.',
+      'Serbest şiir yazıyorsan dize kırılımlarını duygunun nefes alışına göre belirle.',
+    ],
+  },
+  {
+    id: 'fabl',
+    title: 'Fabl Yazma Rehberi',
+    subtitle: 'Hayvanların dilinden insanlığa ayna: Teşhis, intak ve hayat dersi',
+    definition: 'Fabl; kahramanları genellikle hayvanlar, bitkiler ya da cansız varlıklar olan; kişileştirme (teşhis) ve konuşturma (intak) sanatları aracılığıyla insana ve topluma dair ibret verici bir hayat dersi sunan alegorik bir anlatı türüdür.',
+    keyFeatures: [
+      'Hayvan veya doğa varlıklarının insan karakter özelliklerini temsil etmesi (Alegori)',
+      'Kişileştirme (Teşhis) ve Konuşturma (İntak) sanatlarının temel yapı taşı olması',
+      'Kısa, canlı, tempolu ve karşılıklı konuşmalara (diyaloglara) dayalı anlatım',
+      'Çatışma (kurnazlık-saflık, kibir-alçakgönüllülük, tembellik-çalışkanlık gibi zıtlıklar)',
+      'Ana düşünce veya hayat dersi (Metin sonunda doğrudan yazılmak zorunda değildir, olaylardan sezdirilebilir)',
+    ],
+    structure: [
+      '1. Serim: Karakterlerin tanıtılması ve doğal ortamın (orman, gölet, tarla vb.) tasviri.',
+      '2. Düğüm & Karşılaşma: İki zıt karakterin menfaat veya fikir çatışmasıyla yüz yüze gelmesi.',
+      '3. Kırılma Anı: Kurnazlığın, kibrin veya aceleciliğin yol açtığı beklenmedik sonuç.',
+      '4. Çözüm & İbret (Hisse): Hak edenin kazanması, kibrin cezalandırılması ve hayat dersinin sezdirilmesi.',
+    ],
+    watchOutTips: [
+      'Hayvanları sadece birer insan gibi davranan kuklalara dönüştürmeyin; kendi doğal vasıflarını (kanat, gaga, kabuk, pençe) anlatımda hissettirin.',
+      'Dersi parmak sallayarak zorla ezberletmeye çalışmayın; okuyucu karakterin başına gelenden dersi kendisi çıkarabilmelidir.',
+      'Diyalogları uzatıp laf kalabalığı yapmayın; fabl dili kıvrak, esprili ve doğrudan olmalıdır.',
+    ],
+    guidingQuestions: [
+      'Seçtiğim hayvan karakter hangi insan zaafını veya erdemini temsil ediyor?',
+      'Karakterler arasındaki çatışmada hangi taraf aklın ve adaletin sesini dinliyor?',
+      'Okuyucu bu metni bitirdiğinde hangi davranışın yanlış olduğunu kendi kendine fark edecek?',
+    ],
+    sampleTitle: 'Gölgesine Kızan Kibirli Tavus Kuşu',
+    sampleExcerpt: 'Güneşin ormanı altın sarısına boyadığı bir sabah, renkli tüyleriyle övünen tavus kuşu göletin kıyısında salınıyordu. Yanından geçen küçük boz serçeye yukarıdan bakarak, "Gördün mü tüylerimdeki binbir zümrüt damlasını?" dedi. Küçük serçe çalıların arasından gülümsedi: "Gördüm komşu, ama az önce arkandan yaklaşan tilkiyi tüylerinin ağırlığından kaçamayacak kadar geç gördün!" Tavus kuşu tam kanat çırpmak istedi fakat ağır kuyruğu sarmaşıklara dolandı. Onu sarmaşıktan kurtaran ise beğenmediği o küçük serçenin çevik gagası oldu.',
+    writingAdvice: [
+      'Karakterlerinize zıt özellikler verin (Örn: Aceleci tavşan ile sabırlı kaplumbağa).',
+      'Metnin sonunu "Buradan çıkarılacak ders..." diye bitirmek zorunda değilsiniz; son cümleyi düşündürücü bir diyalogla da kapatabilirsiniz.',
+      'Mizah ve hiciv dozunu iyi ayarlayın; fabllar gülümsetirken düşündürmelidir.',
     ],
   },
 ];

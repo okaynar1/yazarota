@@ -15,9 +15,12 @@ import {
   CheckCircle2,
   AlertCircle,
   GitCompare,
+  Cloud,
+  X,
 } from 'lucide-react';
 import { Story, GenreType } from '../types';
 import { GENRES } from '../data/writingData';
+import { WordCloudView } from './WordCloudView';
 
 interface MyStoriesViewProps {
   stories: Story[];
@@ -36,9 +39,31 @@ export const MyStoriesView: React.FC<MyStoriesViewProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGenreFilter, setSelectedGenreFilter] = useState<string>('all');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'completed'>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [storyToDelete, setStoryToDelete] = useState<Story | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [wordCloudStory, setWordCloudStory] = useState<Story | null>(null);
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'pending_teacher':
+        return { label: 'Öğretmende', cls: 'bg-blue-50 text-blue-700 border-blue-200' };
+      case 'revision_requested':
+        return { label: 'Düzeltme İstendi', cls: 'bg-rose-50 text-rose-700 border-rose-200 font-bold' };
+      case 'resubmitted':
+        return { label: 'Yeniden Gönderildi', cls: 'bg-indigo-50 text-indigo-700 border-indigo-200' };
+      case 'approved':
+        return { label: 'Onaylandı', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
+      case 'nominated_for_magazine':
+        return { label: 'Dergi İçin Seçildi', cls: 'bg-purple-50 text-purple-700 border-purple-200' };
+      case 'published':
+        return { label: 'Genç Kalemler’de', cls: 'bg-teal-50 text-teal-800 border-teal-200 font-bold' };
+      case 'completed':
+        return { label: 'Değerlendirildi', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
+      default:
+        return { label: 'Taslak', cls: 'bg-slate-100 text-slate-700 border-slate-200' };
+    }
+  };
 
   // Filtered stories
   const filteredStories = stories.filter((story) => {
@@ -47,7 +72,10 @@ export const MyStoriesView: React.FC<MyStoriesViewProps> = ({
       story.versions.some((v) => v.content.toLowerCase().includes(searchQuery.toLowerCase()));
 
     const matchesGenre = selectedGenreFilter === 'all' || story.genre === selectedGenreFilter;
-    const matchesStatus = statusFilter === 'all' || story.status === statusFilter;
+    const matchesStatus =
+      statusFilter === 'all' ||
+      story.status === statusFilter ||
+      (statusFilter === 'draft' && (!story.status || story.status === 'draft'));
 
     return matchesSearch && matchesGenre && matchesStatus;
   });
@@ -124,12 +152,16 @@ export const MyStoriesView: React.FC<MyStoriesViewProps> = ({
           {/* Status Filter */}
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as any)}
+            onChange={(e) => setStatusFilter(e.target.value)}
             className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 outline-none w-full sm:w-auto"
           >
             <option value="all">Tüm Durumlar</option>
             <option value="draft">Taslaklar</option>
-            <option value="completed">Değerlendirilmiş</option>
+            <option value="pending_teacher">Öğretmende Bekleyenler</option>
+            <option value="revision_requested">Düzeltme İstenenler</option>
+            <option value="resubmitted">Yeniden Gönderilenler</option>
+            <option value="approved">Onaylananlar</option>
+            <option value="published">Dergide Yayımlananlar</option>
           </select>
         </div>
       </div>
@@ -163,6 +195,7 @@ export const MyStoriesView: React.FC<MyStoriesViewProps> = ({
           {filteredStories.map((story) => {
             const latestVersion = story.versions[story.versions.length - 1];
             const latestReview = latestVersion?.review;
+            const badge = getStatusBadge(story.status);
 
             return (
               <div
@@ -177,13 +210,9 @@ export const MyStoriesView: React.FC<MyStoriesViewProps> = ({
                     </span>
 
                     <span
-                      className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-md ${
-                        story.status === 'completed'
-                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                          : 'bg-amber-50 text-amber-700 border border-amber-200'
-                      }`}
+                      className={`text-[10px] uppercase px-2 py-0.5 rounded-md border ${badge.cls}`}
                     >
-                      {story.status === 'completed' ? 'Değerlendirildi' : 'Taslak'}
+                      {badge.label}
                     </span>
                   </div>
 
@@ -256,6 +285,14 @@ export const MyStoriesView: React.FC<MyStoriesViewProps> = ({
                           <GitCompare className="w-4 h-4" />
                         </button>
                       )}
+
+                      <button
+                        onClick={() => setWordCloudStory(story)}
+                        title="Kelime Bulutu & Sözcük Analizi"
+                        className="p-2 rounded-lg text-slate-400 hover:text-teal-700 hover:bg-teal-50 transition-colors"
+                      >
+                        <Cloud className="w-4 h-4" />
+                      </button>
                     </div>
 
                     <button
@@ -305,6 +342,31 @@ export const MyStoriesView: React.FC<MyStoriesViewProps> = ({
                 {isDeleting ? 'Siliniyor...' : 'Evet, Sil'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Word Cloud Inspection Modal */}
+      {wordCloudStory && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-[#faf8f5] w-full max-w-5xl rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-300 max-h-[90vh] overflow-y-auto my-8 relative">
+            <div className="flex items-center justify-between pb-4 mb-6 border-b border-slate-200">
+              <div className="flex items-center gap-2">
+                <Cloud className="w-5 h-5 text-teal-600" />
+                <h3 className="font-bold text-lg text-slate-900 font-display">
+                  “{wordCloudStory.title || 'Başlıksız Eser'}” — Kelime Bulutu ve Sözcük Analizi
+                </h3>
+              </div>
+              <button
+                onClick={() => setWordCloudStory(null)}
+                className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors cursor-pointer"
+                title="Kapat"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <WordCloudView story={wordCloudStory} />
           </div>
         </div>
       )}

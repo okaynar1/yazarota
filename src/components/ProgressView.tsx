@@ -109,7 +109,13 @@ export const ProgressView: React.FC<ProgressViewProps> = ({ stories, onStartWrit
     setting: { total: 0, count: 0, max: 10, label: 'Mekân ve Zaman' },
     genre: { total: 0, count: 0, max: 20, label: 'Türe Uygunluk' },
     language: { total: 0, count: 0, max: 15, label: 'Dil ve Anlatım' },
-    creativity: { total: 0, count: 0, max: 5, label: 'Yaratıcılık' },
+    creativity: { total: 0, count: 0, max: 10, label: 'Yaratıcılık' },
+    theme_emotion: { total: 0, count: 0, max: 20, label: 'Duygu ve Düşünce Aktarımı' },
+    imagery: { total: 0, count: 0, max: 20, label: 'İmge ve Çağrışım Gücü' },
+    diction_rhythm: { total: 0, count: 0, max: 20, label: 'Sözcük Seçimi ve Ritim' },
+    character_personification: { total: 0, count: 0, max: 20, label: 'Karakter ve Kişileştirme' },
+    moral_theme: { total: 0, count: 0, max: 20, label: 'Ana Düşünce ve Ders' },
+    surprise_card: { total: 0, count: 0, max: 10, label: 'Sürpriz Kartı / İmge Uyumu' },
   };
 
   scorePoints.forEach((sp) => {
@@ -118,10 +124,16 @@ export const ProgressView: React.FC<ProgressViewProps> = ({ stories, onStartWrit
     const rev = ver?.review;
     if (rev?.criteriaScores) {
       rev.criteriaScores.forEach((c) => {
-        if (criteriaTotals[c.key]) {
-          criteriaTotals[c.key].total += c.score;
-          criteriaTotals[c.key].count += 1;
+        if (!criteriaTotals[c.key]) {
+          criteriaTotals[c.key] = {
+            total: 0,
+            count: 0,
+            max: c.maxScore || 10,
+            label: c.label || c.key,
+          };
         }
+        criteriaTotals[c.key].total += c.score;
+        criteriaTotals[c.key].count += 1;
       });
     }
   });

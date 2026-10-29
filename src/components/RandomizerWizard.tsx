@@ -20,6 +20,10 @@ import {
   TIMES_POOL,
   CHARACTERS_POOL,
   SURPRISE_CARDS_POOL,
+  POETRY_THEMES_POOL,
+  POETRY_IMAGES_POOL,
+  FABL_CHARACTERS_POOL,
+  FABL_LESSONS_POOL,
 } from '../data/writingData';
 import { GenreType, StoryPrompts } from '../types';
 
@@ -34,31 +38,70 @@ export const RandomizerWizard: React.FC<RandomizerWizardProps> = ({
 }) => {
   const getRandomItem = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
 
-  const [selectedGenre, setSelectedGenre] = useState<GenreType>(
-    initialGenre || getRandomItem(GENRES).id
-  );
+  const getInitialCharacter = (genre: GenreType) => {
+    if (genre === 'siir') return getRandomItem(POETRY_THEMES_POOL);
+    if (genre === 'fabl') return getRandomItem(FABL_CHARACTERS_POOL);
+    return getRandomItem(CHARACTERS_POOL);
+  };
+
+  const getInitialSurprise = (genre: GenreType) => {
+    if (genre === 'siir') return getRandomItem(POETRY_IMAGES_POOL);
+    if (genre === 'fabl') return getRandomItem(FABL_LESSONS_POOL);
+    return getRandomItem(SURPRISE_CARDS_POOL);
+  };
+
+  const startGenre = initialGenre || getRandomItem(GENRES).id;
+  const [selectedGenre, setSelectedGenre] = useState<GenreType>(startGenre);
   const [selectedPlace, setSelectedPlace] = useState<string>(() => getRandomItem(PLACES_POOL));
   const [selectedTime, setSelectedTime] = useState<string>(() => getRandomItem(TIMES_POOL));
-  const [selectedCharacter, setSelectedCharacter] = useState<string>(() => getRandomItem(CHARACTERS_POOL));
-  const [selectedSurpriseCard, setSelectedSurpriseCard] = useState<string>(() => getRandomItem(SURPRISE_CARDS_POOL));
+  const [selectedCharacter, setSelectedCharacter] = useState<string>(() => getInitialCharacter(startGenre));
+  const [selectedSurpriseCard, setSelectedSurpriseCard] = useState<string>(() => getInitialSurprise(startGenre));
 
   // Edit modals or dropdowns for individual card replacement
   const [activePicker, setActivePicker] = useState<'genre' | 'place' | 'time' | 'character' | 'surprise' | null>(null);
 
+  const getCharactersPool = (genre: GenreType = selectedGenre) => {
+    if (genre === 'siir') return POETRY_THEMES_POOL;
+    if (genre === 'fabl') return FABL_CHARACTERS_POOL;
+    return CHARACTERS_POOL;
+  };
+
+  const getSurprisePool = (genre: GenreType = selectedGenre) => {
+    if (genre === 'siir') return POETRY_IMAGES_POOL;
+    if (genre === 'fabl') return FABL_LESSONS_POOL;
+    return SURPRISE_CARDS_POOL;
+  };
+
+  // Change genre and adapt prompts appropriately
+  const handleSelectGenre = (newGenre: GenreType) => {
+    setSelectedGenre(newGenre);
+    if (newGenre === 'siir') {
+      setSelectedCharacter(getRandomItem(POETRY_THEMES_POOL));
+      setSelectedSurpriseCard(getRandomItem(POETRY_IMAGES_POOL));
+    } else if (newGenre === 'fabl') {
+      setSelectedCharacter(getRandomItem(FABL_CHARACTERS_POOL));
+      setSelectedSurpriseCard(getRandomItem(FABL_LESSONS_POOL));
+    }
+  };
+
   // Shuffle individual elements
-  const shuffleGenre = () => setSelectedGenre(getRandomItem(GENRES).id);
+  const shuffleGenre = () => {
+    const nextG = getRandomItem(GENRES).id;
+    handleSelectGenre(nextG);
+  };
   const shufflePlace = () => setSelectedPlace(getRandomItem(PLACES_POOL));
   const shuffleTime = () => setSelectedTime(getRandomItem(TIMES_POOL));
-  const shuffleCharacter = () => setSelectedCharacter(getRandomItem(CHARACTERS_POOL));
-  const shuffleSurprise = () => setSelectedSurpriseCard(getRandomItem(SURPRISE_CARDS_POOL));
+  const shuffleCharacter = () => setSelectedCharacter(getRandomItem(getCharactersPool()));
+  const shuffleSurprise = () => setSelectedSurpriseCard(getRandomItem(getSurprisePool()));
 
   // Shuffle all together
   const shuffleAll = () => {
-    setSelectedGenre(getRandomItem(GENRES).id);
+    const nextGenre = getRandomItem(GENRES).id;
+    setSelectedGenre(nextGenre);
     setSelectedPlace(getRandomItem(PLACES_POOL));
     setSelectedTime(getRandomItem(TIMES_POOL));
-    setSelectedCharacter(getRandomItem(CHARACTERS_POOL));
-    setSelectedSurpriseCard(getRandomItem(SURPRISE_CARDS_POOL));
+    setSelectedCharacter(getRandomItem(getCharactersPool(nextGenre)));
+    setSelectedSurpriseCard(getRandomItem(getSurprisePool(nextGenre)));
   };
 
   const currentGenreObj = GENRES.find((g) => g.id === selectedGenre) || GENRES[0];
@@ -147,7 +190,7 @@ export const RandomizerWizard: React.FC<RandomizerWizardProps> = ({
               <Edit3 className="w-3 h-3" />
               <span>Türü Kendim Seç</span>
             </button>
-            <span className="text-[11px] text-slate-400">6 Tür Mevcut</span>
+            <span className="text-[11px] text-slate-400">{GENRES.length} Tür Mevcut</span>
           </div>
         </div>
 
@@ -157,7 +200,7 @@ export const RandomizerWizard: React.FC<RandomizerWizardProps> = ({
             <div className="flex items-center justify-between mb-3">
               <span className="text-[11px] font-bold tracking-wider uppercase text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-md border border-amber-200 flex items-center gap-1.5">
                 <MapPin className="w-3.5 h-3.5" />
-                Aşama 2: Mekân
+                {selectedGenre === 'siir' ? 'Aşama 2: Mekân / Doğa' : 'Aşama 2: Mekân'}
               </span>
               <button
                 onClick={shufflePlace}
@@ -174,7 +217,9 @@ export const RandomizerWizard: React.FC<RandomizerWizardProps> = ({
               </p>
             </div>
             <p className="text-[11px] text-slate-500 mt-2 italic">
-              Bu mekânın kokusu, ışığı ve sesleri hikâyenin atmosferini belirleyecek.
+              {selectedGenre === 'siir'
+                ? 'Doğanın veya çevrenin atmosferi dizelerindeki duygu iklimini belirleyecek.'
+                : 'Bu mekânın kokusu, ışığı ve sesleri anlatının atmosferini belirleyecek.'}
             </p>
           </div>
 
@@ -196,7 +241,7 @@ export const RandomizerWizard: React.FC<RandomizerWizardProps> = ({
             <div className="flex items-center justify-between mb-3">
               <span className="text-[11px] font-bold tracking-wider uppercase text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-md border border-blue-200 flex items-center gap-1.5">
                 <Clock className="w-3.5 h-3.5" />
-                Aşama 3: Zaman
+                {selectedGenre === 'siir' ? 'Aşama 3: Zaman / An' : 'Aşama 3: Zaman'}
               </span>
               <button
                 onClick={shuffleTime}
@@ -213,7 +258,9 @@ export const RandomizerWizard: React.FC<RandomizerWizardProps> = ({
               </p>
             </div>
             <p className="text-[11px] text-slate-500 mt-2 italic">
-              Olayların geçtiği çağ veya an, karakterin kararlarını doğrudan etkiler.
+              {selectedGenre === 'siir'
+                ? 'Günün hangi vakti veya hangi mevsim dizelerine eşlik edecek?'
+                : 'Olayların geçtiği çağ veya an, karakterin kararlarını doğrudan etkiler.'}
             </p>
           </div>
 
@@ -229,17 +276,21 @@ export const RandomizerWizard: React.FC<RandomizerWizardProps> = ({
           </div>
         </div>
 
-        {/* Aşama 4: Karakter Kartı */}
+        {/* Aşama 4: Karakter / Tema Kartı */}
         <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-3">
               <span className="text-[11px] font-bold tracking-wider uppercase text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-md border border-purple-200 flex items-center gap-1.5">
                 <User className="w-3.5 h-3.5" />
-                Aşama 4: Karakter
+                {selectedGenre === 'siir'
+                  ? 'Aşama 4: Şiir Teması / Özne'
+                  : selectedGenre === 'fabl'
+                  ? 'Aşama 4: Kişileştirilmiş Karakter'
+                  : 'Aşama 4: Karakter'}
               </span>
               <button
                 onClick={shuffleCharacter}
-                title="Yeni Karakter Çek"
+                title="Yeni Öğe Çek"
                 className="p-1.5 rounded-lg bg-slate-50 hover:bg-purple-50 text-slate-500 hover:text-purple-700 border border-slate-200 transition-colors"
               >
                 <Shuffle className="w-3.5 h-3.5" />
@@ -252,7 +303,11 @@ export const RandomizerWizard: React.FC<RandomizerWizardProps> = ({
               </p>
             </div>
             <p className="text-[11px] text-slate-500 mt-2 italic">
-              Karakterinin iç dünyasını, arzularını ve zaaflarını keşfetmeye hazır ol.
+              {selectedGenre === 'siir'
+                ? 'Şiirinin kalbinde yer alacak duygu, tema veya lirik anlatıcı sesi.'
+                : selectedGenre === 'fabl'
+                ? 'Kişileştirilmiş hayvanlar veya varlıklar arasındaki zıtlık ve diyalog.'
+                : 'Karakterinin iç dünyasını, arzularını ve zaaflarını keşfetmeye hazır ol.'}
             </p>
           </div>
 
@@ -262,13 +317,19 @@ export const RandomizerWizard: React.FC<RandomizerWizardProps> = ({
               className="text-xs text-purple-700 hover:text-purple-900 font-semibold inline-flex items-center gap-1"
             >
               <Edit3 className="w-3 h-3" />
-              <span>Karakteri Listeden Seç</span>
+              <span>
+                {selectedGenre === 'siir'
+                  ? 'Temayı Listeden Seç'
+                  : selectedGenre === 'fabl'
+                  ? 'Kahramanı Listeden Seç'
+                  : 'Karakteri Listeden Seç'}
+              </span>
             </button>
-            <span className="text-[11px] text-slate-400">{CHARACTERS_POOL.length}+ Havuz</span>
+            <span className="text-[11px] text-slate-400">{getCharactersPool().length}+ Havuz</span>
           </div>
         </div>
 
-        {/* Aşama 5: Sürpriz Kartı (En Özgün ve Önemli Bileşen) */}
+        {/* Aşama 5: Sürpriz Kartı (Katalizör / İmge / Ders) */}
         <div className="bg-gradient-to-br from-rose-900 via-slate-900 to-[#0f172a] text-white rounded-2xl p-6 border-2 border-rose-500/50 shadow-lg md:col-span-2 flex flex-col justify-between relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-rose-500/10 rounded-full blur-2xl pointer-events-none"></div>
 
@@ -276,11 +337,15 @@ export const RandomizerWizard: React.FC<RandomizerWizardProps> = ({
             <div className="flex items-center justify-between mb-3 relative z-10">
               <span className="text-[11px] font-bold tracking-wider uppercase text-rose-300 bg-rose-950/80 px-2.5 py-0.5 rounded-md border border-rose-700/60 flex items-center gap-1.5">
                 <Zap className="w-3.5 h-3.5 text-rose-400 animate-pulse" />
-                Aşama 5: Sürpriz Kartı (Hikâye Katalizörü)
+                {selectedGenre === 'siir'
+                  ? 'Aşama 5: Şiirsel İmge & Sürpriz Kırılma'
+                  : selectedGenre === 'fabl'
+                  ? 'Aşama 5: Çatışma & Çıkarılacak Ders İpucu'
+                  : 'Aşama 5: Sürpriz Kartı (Hikâye Katalizörü)'}
               </span>
               <button
                 onClick={shuffleSurprise}
-                title="Yeni Sürpriz Kartı Çek"
+                title="Yeni Sürpriz Çek"
                 className="p-1.5 rounded-lg bg-rose-900/60 hover:bg-rose-800 text-rose-200 border border-rose-700/70 transition-colors cursor-pointer"
               >
                 <Shuffle className="w-4 h-4" />
@@ -294,7 +359,18 @@ export const RandomizerWizard: React.FC<RandomizerWizardProps> = ({
             </div>
 
             <p className="text-xs text-rose-300/80 mt-3 font-serif-literary leading-relaxed relative z-10">
-              <strong className="text-rose-200">Kurgusal Etki:</strong> Bu kart sadece bir süsleme değildir; hikâyenin düğüm noktasını oluşturacak ve karakterini zor bir seçimle ya da beklenmedik bir virajla baş başa bırakacaktır.
+              <strong className="text-rose-200">
+                {selectedGenre === 'siir'
+                  ? 'Şiirsel Katkı: '
+                  : selectedGenre === 'fabl'
+                  ? 'Fablın Özü: '
+                  : 'Kurgusal Etki: '}
+              </strong>
+              {selectedGenre === 'siir'
+                ? 'Bu imge şiirine alışılmışın dışında taze bir çağrışım ve derinlik kazandıracaktır.'
+                : selectedGenre === 'fabl'
+                ? 'Bu ders veya çatışma metnin ana fikrini şekillendirir (ders doğrudan söylenebileceği gibi sezdirilebilir de).'
+                : 'Bu kart sadece bir süsleme değildir; hikâyenin düğüm noktasını oluşturacak ve karakterini zor bir seçimle baş başa bırakacaktır.'}
             </p>
           </div>
 
@@ -304,9 +380,15 @@ export const RandomizerWizard: React.FC<RandomizerWizardProps> = ({
               className="text-xs text-rose-300 hover:text-rose-100 font-semibold inline-flex items-center gap-1 cursor-pointer"
             >
               <Edit3 className="w-3.5 h-3.5" />
-              <span>Farklı Bir Sürpriz Kartı Seç</span>
+              <span>
+                {selectedGenre === 'siir'
+                  ? 'Farklı Bir Şiirsel İmge Seç'
+                  : selectedGenre === 'fabl'
+                  ? 'Farklı Bir Çatışma/Ders Seç'
+                  : 'Farklı Bir Sürpriz Kartı Seç'}
+              </span>
             </button>
-            <span className="text-[11px] text-rose-400/80">{SURPRISE_CARDS_POOL.length} Özel Kart</span>
+            <span className="text-[11px] text-rose-400/80">{getSurprisePool().length} Özel Kart</span>
           </div>
         </div>
       </div>
@@ -315,7 +397,11 @@ export const RandomizerWizard: React.FC<RandomizerWizardProps> = ({
       <div className="bg-gradient-to-r from-teal-900 via-slate-900 to-cyan-950 rounded-2xl p-6 text-white border border-teal-800/60 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
         <div className="space-y-1 text-center sm:text-left">
           <h4 className="font-bold text-base text-teal-200 font-display">
-            İpuçların Hazır! Kendi Hikâye Dünyanı İnşa Et.
+            {selectedGenre === 'siir'
+              ? 'İpuçların Hazır! Kendi Şiir Dünyanı İnşa Et.'
+              : selectedGenre === 'fabl'
+              ? 'İpuçların Hazır! Kendi Fabl Dünyanı İnşa Et.'
+              : 'İpuçların Hazır! Kendi Hikâye Dünyanı İnşa Et.'}
           </h4>
           <p className="text-xs text-slate-300 font-serif-literary">
             Önce yazmaya odaklan; kusursuzluk peşinde koşma. Yapay zekâ metnini geliştirmende sana yol arkadaşlığı yapacak.
@@ -327,7 +413,13 @@ export const RandomizerWizard: React.FC<RandomizerWizardProps> = ({
           className="w-full sm:w-auto shrink-0 inline-flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-xl bg-gradient-to-r from-teal-400 to-cyan-400 hover:from-teal-300 hover:to-cyan-300 text-slate-950 font-extrabold text-sm shadow-lg shadow-teal-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
         >
           <Sparkles className="w-4 h-4" />
-          <span>Hikâyemi Yazmaya Başla</span>
+          <span>
+            {selectedGenre === 'siir'
+              ? 'Şiirimi Yazmaya Başla'
+              : selectedGenre === 'fabl'
+              ? 'Fabl Yazmaya Başla'
+              : 'Hikâyemi Yazmaya Başla'}
+          </span>
           <ArrowRight className="w-4 h-4" />
         </button>
       </div>
@@ -342,8 +434,18 @@ export const RandomizerWizard: React.FC<RandomizerWizardProps> = ({
                   {activePicker === 'genre' && 'Edebî Tür Seçimi'}
                   {activePicker === 'place' && 'Mekân Havuzundan Seç'}
                   {activePicker === 'time' && 'Zaman Havuzundan Seç'}
-                  {activePicker === 'character' && 'Karakter Havuzundan Seç'}
-                  {activePicker === 'surprise' && 'Sürpriz Kartı Havuzundan Seç'}
+                  {activePicker === 'character' &&
+                    (selectedGenre === 'siir'
+                      ? 'Şiir Teması / Özne Havuzundan Seç'
+                      : selectedGenre === 'fabl'
+                      ? 'Kahraman Hayvan / Varlık Havuzundan Seç'
+                      : 'Karakter Havuzundan Seç')}
+                  {activePicker === 'surprise' &&
+                    (selectedGenre === 'siir'
+                      ? 'Şiirsel İmge & Sürpriz Kırılma Seç'
+                      : selectedGenre === 'fabl'
+                      ? 'Çatışma & Ders İpucu Seç'
+                      : 'Sürpriz Kartı Havuzundan Seç')}
                 </span>
               </div>
               <button
@@ -360,7 +462,7 @@ export const RandomizerWizard: React.FC<RandomizerWizardProps> = ({
                   <button
                     key={g.id}
                     onClick={() => {
-                      setSelectedGenre(g.id);
+                      handleSelectGenre(g.id);
                       setActivePicker(null);
                     }}
                     className={`w-full text-left p-3.5 rounded-xl border transition-all flex items-center justify-between ${
@@ -416,7 +518,7 @@ export const RandomizerWizard: React.FC<RandomizerWizardProps> = ({
                 ))}
 
               {activePicker === 'character' &&
-                CHARACTERS_POOL.map((c, idx) => (
+                getCharactersPool().map((c, idx) => (
                   <button
                     key={idx}
                     onClick={() => {
@@ -435,7 +537,7 @@ export const RandomizerWizard: React.FC<RandomizerWizardProps> = ({
                 ))}
 
               {activePicker === 'surprise' &&
-                SURPRISE_CARDS_POOL.map((s, idx) => (
+                getSurprisePool().map((s, idx) => (
                   <button
                     key={idx}
                     onClick={() => {
