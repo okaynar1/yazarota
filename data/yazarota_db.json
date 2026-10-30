@@ -124,15 +124,27 @@
     },
     {
       "id": "user-1793361514293-7v5v",
-      "username": "test_ortaokul_vercel",
-      "passwordHash": "8a6b8a230320d2fd823b01a18076c011c35ea449cadfbfef1f82b6e2a7a91794fba2d08b0433928cd504e38c024e3fadcc09f013037f7d6fb9e3e2689bb25683",
-      "salt": "abcfcf22f3f07f156d6975976ebe2eed",
-      "role": "student",
       "name": "Ahmet Yılmaz",
-      "classGrade": "7-B",
+      "role": "student",
+      "salt": "abcfcf22f3f07f156d6975976ebe2eed",
+      "username": "test_ortaokul_vercel",
+      "createdAt": "2026-10-30T11:58:34.293Z",
       "pseudonym": "Güneş Yolcusu",
+      "classGrade": "7-B",
+      "passwordHash": "8a6b8a230320d2fd823b01a18076c011c35ea449cadfbfef1f82b6e2a7a91794fba2d08b0433928cd504e38c024e3fadcc09f013037f7d6fb9e3e2689bb25683",
+      "mustChangePassword": false
+    },
+    {
+      "id": "user-1793363191318-5ejs",
+      "username": "ogrenci_orta8c",
+      "passwordHash": "edf7b8c0a934455835f3174809d473b2ecde8ac8d0c21eafb18ae11903c010963db7dd7534ed184a30a8541106288c375dc909200037006731dead7281d2c004",
+      "salt": "16e86921dc0d1f9d5f2a357f7f303586",
+      "role": "student",
+      "name": "Zeynep Çelik",
+      "classGrade": "8-C",
+      "pseudonym": "Kuzey Rüzgarı",
       "mustChangePassword": false,
-      "createdAt": "2026-10-30T11:58:34.293Z"
+      "createdAt": "2026-10-30T12:26:31.318Z"
     }
   ],
   "classes": [
@@ -164,32 +176,60 @@
   ],
   "stories": [
     {
-      "title": "Yıldızların Sırrı",
-      "genre": "bilim_kurgu",
-      "place": "Rasathane",
-      "time": "Gece yarısı",
-      "character": "Genç Astronom",
-      "surpriseCard": "Eski bir gök haritası",
-      "content": "Teleskobun merceğinden gökyüzüne bakarken parlayan yeni bir nebula fark etti.",
-      "id": "story-1793361526399-901f6",
-      "authorUsername": "test_ortaokul_vercel",
-      "authorName": "Ahmet Yılmaz",
-      "authorClass": "7-B",
+      "title": "Kuzey Işıklarının Altında",
+      "genre": "hikaye",
+      "place": "Karlı Vadi",
+      "time": "Kış gecesi",
+      "character": "Gezgin Fotoğrafçı",
+      "surpriseCard": "Eski bir pusula",
+      "content": "Gök yüzünde yeşil ve mor dalgalar dans ederken dondurucu ayazın ortasında eski pusulayı çıkardı.",
+      "id": "story-1793363197243-ld525",
+      "authorUsername": "ogrenci_orta8c",
+      "authorName": "Zeynep Çelik",
+      "authorClass": "8-C",
       "status": "draft",
       "versions": [
         {
           "id": "ver-1",
           "versionNumber": 1,
-          "title": "Yıldızların Sırrı",
-          "content": "Teleskobun merceğinden gökyüzüne bakarken parlayan yeni bir nebula fark etti.",
-          "wordCount": 10,
-          "characterCount": 77,
-          "createdAt": "2026-10-30T11:58:46.399Z"
+          "title": "Kuzey Işıklarının Altında",
+          "content": "Gök yüzünde yeşil ve mor dalgalar dans ederken dondurucu ayazın ortasında eski pusulayı çıkardı.",
+          "wordCount": 14,
+          "characterCount": 96,
+          "createdAt": "2026-10-30T12:26:37.243Z"
         }
       ],
       "currentVersionNumber": 1,
+      "createdAt": "2026-10-30T12:26:37.243Z",
+      "updatedAt": "2026-10-30T12:26:37.243Z"
+    },
+    {
+      "id": "story-1793361526399-901f6",
+      "time": "Gece yarısı",
+      "genre": "bilim_kurgu",
+      "place": "Rasathane",
+      "title": "Yıldızların Sırrı",
+      "status": "draft",
+      "content": "Teleskobun merceğinden gökyüzüne bakarken parlayan yeni bir nebula fark etti.",
+      "versions": [
+        {
+          "id": "ver-1",
+          "title": "Yıldızların Sırrı",
+          "content": "Teleskobun merceğinden gökyüzüne bakarken parlayan yeni bir nebula fark etti.",
+          "createdAt": "2026-10-30T11:58:46.399Z",
+          "wordCount": 10,
+          "versionNumber": 1,
+          "characterCount": 77
+        }
+      ],
+      "character": "Genç Astronom",
       "createdAt": "2026-10-30T11:58:46.399Z",
-      "updatedAt": "2026-10-30T11:58:46.399Z"
+      "updatedAt": "2026-10-30T11:58:46.399Z",
+      "authorName": "Ahmet Yılmaz",
+      "authorClass": "7-B",
+      "surpriseCard": "Eski bir gök haritası",
+      "authorUsername": "test_ortaokul_vercel",
+      "currentVersionNumber": 1
     },
     {
       "id": "story-1793293682703",
