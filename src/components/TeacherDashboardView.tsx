@@ -25,6 +25,7 @@ import {
   fetchMagazineIssues,
   createMagazineIssue,
   changePassword,
+  fetchTeacherStudents,
 } from '../services/api';
 import {
   GraduationCap,
@@ -55,6 +56,8 @@ import {
   Copy,
   ExternalLink,
   RefreshCw,
+  Hash,
+  School,
 } from 'lucide-react';
 
 interface TeacherDashboardViewProps {
@@ -89,6 +92,9 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({
   const [tasks, setTasks] = useState<WritingTask[]>([]);
   const [publishedWorks, setPublishedWorks] = useState<PublishedWork[]>([]);
   const [magazineIssues, setMagazineIssues] = useState<MagazineIssue[]>([]);
+  const [myStudents, setMyStudents] = useState<any[]>([]);
+  const [teacherCodeCopied, setTeacherCodeCopied] = useState(false);
+  const [serverTeacherCode, setServerTeacherCode] = useState<string>(currentUser?.teacherCode || 'YZR-1001');
   const [loading, setLoading] = useState(true);
 
   // Active Story Inspection & Grading Modal
@@ -182,16 +188,25 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({
   const loadAllData = async () => {
     setLoading(true);
     fetchSupabaseStatus();
-    const [fetchedStories, fetchedStats, fetchedRubric, fetchedClasses, fetchedTasks, fetchedPubs, fetchedIssues] =
-      await Promise.all([
-        fetchStories(),
-        fetchTeacherStats(),
-        fetchRubricCriteria(),
-        fetchClasses(),
-        fetchTasks(),
-        fetchPublishedWorks(),
-        fetchMagazineIssues(),
-      ]);
+    const [
+      fetchedStories,
+      fetchedStats,
+      fetchedRubric,
+      fetchedClasses,
+      fetchedTasks,
+      fetchedPubs,
+      fetchedIssues,
+      studentData,
+    ] = await Promise.all([
+      fetchStories(),
+      fetchTeacherStats(),
+      fetchRubricCriteria(),
+      fetchClasses(),
+      fetchTasks(),
+      fetchPublishedWorks(),
+      fetchMagazineIssues(),
+      fetchTeacherStudents(),
+    ]);
 
     setStories(fetchedStories);
     setStats(fetchedStats);
@@ -200,6 +215,10 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({
     setTasks(fetchedTasks);
     setPublishedWorks(fetchedPubs);
     setMagazineIssues(fetchedIssues);
+    setMyStudents(studentData?.students || []);
+    if (studentData?.teacherCode) {
+      setServerTeacherCode(studentData.teacherCode);
+    }
     if (fetchedIssues.length > 0) {
       setPubSelectedIssueId(fetchedIssues[0].id);
     }
@@ -410,7 +429,7 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({
   return (
     <div className="space-y-8 pb-16 animate-fadeIn">
       {/* Top Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-amber-950 to-slate-900 text-white rounded-3xl p-8 shadow-xl border border-amber-900/40 relative overflow-hidden">
+      <div className="bg-gradient-to-r from-slate-900 via-amber-950 to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-amber-900/40 relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-semibold">
@@ -425,7 +444,7 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0">
             <a
               href="/api/export-csv"
               download
@@ -434,6 +453,39 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({
               <FileSpreadsheet className="w-4 h-4" />
               <span>Tüm Verileri İndir (.CSV)</span>
             </a>
+          </div>
+        </div>
+
+        {/* Unique Teacher Code Display Card */}
+        <div className="mt-6 pt-5 border-t border-amber-800/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-amber-950/50 p-4 rounded-2xl border border-amber-500/30">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-300 shrink-0">
+              <Hash className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-[11px] text-amber-200/80 font-medium">Öğretmen Kodunuz (Öğrenci Kayıt Eşleştirmesi):</div>
+              <div className="text-xl font-bold font-mono tracking-widest text-amber-300">
+                {serverTeacherCode || currentUser?.teacherCode || 'YZR-1001'}
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-[11px] text-amber-200/70 hidden lg:inline max-w-xs text-right">
+              Öğrencileriniz kayıt olurken bu kodu girdiğinde doğrudan sizinle eşleşir.
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                const code = serverTeacherCode || currentUser?.teacherCode || 'YZR-1001';
+                navigator.clipboard.writeText(code);
+                setTeacherCodeCopied(true);
+                setTimeout(() => setTeacherCodeCopied(false), 2500);
+              }}
+              className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-md transition-all cursor-pointer shrink-0"
+            >
+              {teacherCodeCopied ? <Check className="w-4 h-4 text-emerald-900" /> : <Copy className="w-4 h-4" />}
+              <span>{teacherCodeCopied ? 'Kopyalandı!' : 'Öğretmen Kodunu Kopyala'}</span>
+            </button>
           </div>
         </div>
       </div>
@@ -720,6 +772,102 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({
       {/* TAB 8: ÖĞRENCİ VE SINIF YÖNETİMİ */}
       {activeTab === 'classes' && (
         <div className="space-y-6">
+          {/* Registered Students Linked to this Teacher */}
+          <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+              <div>
+                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                  <Users className="w-4 h-4 text-amber-600" />
+                  <span>Öğretmen Kodunuz ile Eşleşen Kayıtlı Öğrenciler</span>
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
+                    {myStudents.length} Öğrenci
+                  </span>
+                </h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  Öğretmen kodunuzu (<span className="font-mono font-bold text-amber-800">{serverTeacherCode || currentUser?.teacherCode || 'YZR-1001'}</span>) kullanarak kayıt olan ortaokul öğrencilerinizin listesi ve çalışma durumları.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const data = await fetchTeacherStudents();
+                    setMyStudents(data.students || []);
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>Listeyi Yenile</span>
+                </button>
+              </div>
+            </div>
+
+            {myStudents.length === 0 ? (
+              <div className="p-8 text-center rounded-2xl bg-slate-50 border border-dashed border-slate-200 space-y-2">
+                <Users className="w-8 h-8 text-slate-300 mx-auto" />
+                <h4 className="text-sm font-bold text-slate-700">Henüz Kayıtlı Öğrenci Bulunmuyor</h4>
+                <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
+                  Öğrencileriniz kayıt olurken öğretmen kodunuz olan <strong className="font-mono text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded">{serverTeacherCode || currentUser?.teacherCode || 'YZR-1001'}</strong> kodunu girdiklerinde burada listelenecek ve yazıları doğrudan sizin panelinize düşecektir.
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-slate-500 uppercase tracking-wider text-[10px]">
+                      <th className="py-3 px-3">Öğrenci</th>
+                      <th className="py-3 px-3">Kullanıcı Adı</th>
+                      <th className="py-3 px-3">Sınıf / Şube</th>
+                      <th className="py-3 px-3">Yazar Mahlası</th>
+                      <th className="py-3 px-3 text-center">Toplam Yazı</th>
+                      <th className="py-3 px-3 text-center">İncelemede</th>
+                      <th className="py-3 px-3 text-center">Onaylanan</th>
+                      <th className="py-3 px-3 text-right">Kayıt Tarihi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {myStudents.map((std) => (
+                      <tr key={std.id} className="hover:bg-slate-50/70 transition-colors">
+                        <td className="py-3 px-3 font-semibold text-slate-900 flex items-center gap-2">
+                          <div className="w-7 h-7 rounded-lg bg-teal-100 text-teal-800 font-bold flex items-center justify-center text-xs">
+                            {std.name.charAt(0).toUpperCase()}
+                          </div>
+                          <span>{std.name}</span>
+                        </td>
+                        <td className="py-3 px-3 font-mono text-slate-600">@{std.username}</td>
+                        <td className="py-3 px-3">
+                          <span className="font-semibold text-teal-800 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-md text-[11px]">
+                            {std.classGrade || '5-A'}
+                          </span>
+                        </td>
+                        <td className="py-3 px-3 font-serif-literary text-slate-700 italic">
+                          {std.pseudonym || '—'}
+                        </td>
+                        <td className="py-3 px-3 text-center font-bold text-slate-700">
+                          {std.storyCount}
+                        </td>
+                        <td className="py-3 px-3 text-center">
+                          <span className="font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full text-[11px]">
+                            {std.submittedCount}
+                          </span>
+                        </td>
+                        <td className="py-3 px-3 text-center">
+                          <span className="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full text-[11px]">
+                            {std.approvedCount}
+                          </span>
+                        </td>
+                        <td className="py-3 px-3 text-right text-slate-400 text-[11px]">
+                          {std.createdAt ? new Date(std.createdAt).toLocaleDateString('tr-TR') : '—'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
           {/* Create New Class */}
           <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
             <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
@@ -733,7 +881,7 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({
                 <input
                   type="text"
                   required
-                  placeholder="Örn: 10-C Yaratıcı Yazarlık"
+                  placeholder="Örn: 6-A Yaratıcı Yazarlık"
                   value={newClassName}
                   onChange={(e) => setNewClassName(e.target.value)}
                   className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-amber-500 outline-none"
@@ -747,10 +895,10 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({
                   onChange={(e) => setNewClassGrade(e.target.value)}
                   className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-amber-500 outline-none bg-white"
                 >
-                  <option value="9. Sınıf">9. Sınıf</option>
-                  <option value="10. Sınıf">10. Sınıf</option>
-                  <option value="11. Sınıf">11. Sınıf</option>
-                  <option value="12. Sınıf">12. Sınıf</option>
+                  <option value="5. Sınıf">5. Sınıf</option>
+                  <option value="6. Sınıf">6. Sınıf</option>
+                  <option value="7. Sınıf">7. Sınıf</option>
+                  <option value="8. Sınıf">8. Sınıf</option>
                 </select>
               </div>
 
@@ -771,7 +919,7 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({
               <div className="md:col-span-3 flex justify-end">
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-semibold shadow-sm"
+                  className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-semibold shadow-sm cursor-pointer"
                 >
                   Sınıfı ve Kodları Oluştur
                 </button>

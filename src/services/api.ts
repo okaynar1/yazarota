@@ -35,6 +35,7 @@ export function clearAuthSession(): void {
   try {
     localStorage.removeItem(AUTH_TOKEN_KEY);
     localStorage.removeItem(AUTH_USER_KEY);
+    localStorage.removeItem(LOCAL_STORAGE_KEY);
   } catch (e) {}
 }
 
@@ -146,10 +147,35 @@ async function safeFetchJson<T>(
 
 // ================= AUTH METHODS =================
 
+export async function registerTeacher(payload: {
+  name: string;
+  username: string;
+  password: string;
+  school?: string;
+}): Promise<{ user: User; token: string }> {
+  const result = await safeFetchJson<{ success: boolean; user: User; token: string; error?: string }>(
+    '/api/auth/register-teacher',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    },
+    'Öğretmen kaydı yapılırken'
+  );
+
+  if (!result.ok || !result.data?.success || !result.data.user) {
+    throw new Error(result.error || result.data?.error || 'Öğretmen kaydı tamamlanamadı.');
+  }
+
+  setAuthSession(result.data.token, result.data.user);
+  return { user: result.data.user, token: result.data.token };
+}
+
 export async function registerStudent(payload: {
   username: string;
   password: string;
   name: string;
+  teacherCode: string;
   classGrade?: string;
   pseudonym?: string;
 }): Promise<{ user: User; token: string }> {
@@ -171,9 +197,45 @@ export async function registerStudent(payload: {
   return { user: result.data.user, token: result.data.token };
 }
 
+export async function fetchTeacherStudents(): Promise<{
+  students: Array<{
+    id: string;
+    username: string;
+    name: string;
+    classGrade?: string;
+    pseudonym?: string;
+    createdAt: string;
+    assignedTeacherCode?: string;
+    assignedTeacherName?: string;
+    storyCount: number;
+    submittedCount: number;
+    approvedCount: number;
+  }>;
+  teacherCode?: string;
+  teacherName?: string;
+}> {
+  const result = await safeFetchJson<{
+    success: boolean;
+    students: any[];
+    teacherCode?: string;
+    teacherName?: string;
+  }>('/api/teacher/students', undefined, 'Öğrenci listesi alınırken');
+
+  if (!result.ok || !result.data?.success) {
+    return { students: [] };
+  }
+
+  return {
+    students: result.data.students || [],
+    teacherCode: result.data.teacherCode,
+    teacherName: result.data.teacherName,
+  };
+}
+
 export async function loginUser(payload: {
   username: string;
   password: string;
+  role?: 'student' | 'teacher';
 }): Promise<{ user: User; token: string }> {
   const result = await safeFetchJson<{ success: boolean; user: User; token: string; error?: string }>(
     '/api/auth/login',
@@ -360,15 +422,23 @@ export async function deleteStory(id: string): Promise<boolean> {
 }
 
 // Student submits to teacher
-export async function submitStoryToTeacher(id: string): Promise<Story> {
+export async function submitStoryToTeacher(id: string, payload?: Partial<Story>): Promise<Story> {
   const result = await safeFetchJson<{ success: boolean; story: Story; message?: string }>(
     `/api/stories/${id}/submit-to-teacher`,
-    { method: 'POST' },
-    'Hikâye öğretmene gönderilirken'
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: payload ? JSON.stringify(payload) : undefined,
+    },
+    'Yazı öğretmene gönderilirken'
   );
 
   if (!result.ok || !result.data?.success || !result.data.story) {
-    throw new Error(result.error || 'Yazı öğretmene gönderilemedi.');
+    throw new Error(
+      result.error ||
+        result.data?.message ||
+        'Yazınız öğretmeninize gönderilemedi. Lütfen bağlantınızı kontrol edip tekrar deneyiniz.'
+    );
   }
 
   return result.data.story;

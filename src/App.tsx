@@ -14,6 +14,7 @@ import {
   StudentRegisterModal,
   StudentLoginModal,
   TeacherLoginModal,
+  TeacherRegisterModal,
   TeacherChangePasswordModal,
 } from './components/AuthModals';
 import { NotificationDrawer } from './components/NotificationDrawer';
@@ -55,6 +56,7 @@ export default function App() {
   const [isStudentLoginOpen, setIsStudentLoginOpen] = useState(false);
   const [isStudentRegisterOpen, setIsStudentRegisterOpen] = useState(false);
   const [isTeacherLoginOpen, setIsTeacherLoginOpen] = useState(false);
+  const [isTeacherRegisterOpen, setIsTeacherRegisterOpen] = useState(false);
   const [isTeacherPassChangeOpen, setIsTeacherPassChangeOpen] = useState(false);
   const [isMandatoryPassChange, setIsMandatoryPassChange] = useState(false);
 
@@ -84,10 +86,13 @@ export default function App() {
     setStories(fetchedStories);
     setNotifications(notifs);
 
-    // If teacher has mandatory password change pending, open change password modal
-    if (user && user.role === 'teacher' && user.mustChangePassword) {
-      setIsMandatoryPassChange(true);
-      setIsTeacherPassChangeOpen(true);
+    // If teacher is logged in, default directly to teacher panel
+    if (user && user.role === 'teacher') {
+      setActiveTab('teacher');
+      if (user.mustChangePassword) {
+        setIsMandatoryPassChange(true);
+        setIsTeacherPassChangeOpen(true);
+      }
     }
 
     setLoading(false);
@@ -107,6 +112,9 @@ export default function App() {
     clearAuthSession();
     setCurrentUser(null);
     setNotifications([]);
+    setStories([]);
+    setCurrentStory(null);
+    setCurrentReview(null);
     setActiveTab('home');
   };
 
@@ -235,6 +243,16 @@ export default function App() {
       <Navbar
         activeTab={activeTab}
         setActiveTab={(tab) => {
+          // Role-based protection: Students cannot access teacher panel
+          if (tab === 'teacher' && currentUser?.role !== 'teacher') {
+            setIsTeacherLoginOpen(true);
+            return;
+          }
+          // Role-based protection: Teachers cannot access student writing/draft workspace
+          if ((tab === 'create' || tab === 'stories') && currentUser?.role === 'teacher') {
+            setActiveTab('teacher');
+            return;
+          }
           if (tab === 'teacher' && currentUser?.role === 'teacher' && currentUser.mustChangePassword) {
             setIsMandatoryPassChange(true);
             setIsTeacherPassChangeOpen(true);
@@ -245,7 +263,7 @@ export default function App() {
             setCurrentReview(null);
           }
         }}
-        storiesCount={stories.length}
+        storiesCount={currentUser?.role === 'teacher' ? 0 : stories.length}
         currentUser={currentUser}
         notifications={notifications}
         onOpenNotifications={() => setIsNotifDrawerOpen(true)}
@@ -259,17 +277,23 @@ export default function App() {
         {/* TAB 1: Home View */}
         {activeTab === 'home' && (
           <HomeView
+            currentUser={currentUser}
             onStartNewStory={handleStartNewStory}
             onNavigateTab={(tab) => {
-              if (tab === 'progress') setActiveTab('stories');
-              else setActiveTab(tab as NavTab);
+              if (currentUser?.role === 'teacher') {
+                if (tab === 'progress' || tab === 'stories' || tab === 'create') setActiveTab('teacher');
+                else setActiveTab(tab as NavTab);
+              } else {
+                if (tab === 'progress') setActiveTab('stories');
+                else setActiveTab(tab as NavTab);
+              }
             }}
-            savedStoriesCount={stories.length}
+            savedStoriesCount={currentUser?.role === 'teacher' ? 0 : stories.length}
           />
         )}
 
-        {/* TAB 2: Story Creation Flow */}
-        {activeTab === 'create' && (
+        {/* TAB 2: Story Creation Flow (Only for students / unauthenticated guests) */}
+        {activeTab === 'create' && currentUser?.role !== 'teacher' && (
           <div>
             {currentReview && currentStory ? (
               <EvaluationView
@@ -286,6 +310,9 @@ export default function App() {
                 onEvaluationComplete={handleEvaluationComplete}
                 onCompareVersions={(story) => setComparingStory(story)}
                 onBackToPromptWizard={() => setCurrentStory(null)}
+                currentUser={currentUser}
+                onOpenLogin={() => setIsStudentLoginOpen(true)}
+                onOpenRegister={() => setIsStudentRegisterOpen(true)}
               />
             ) : (
               <RandomizerWizard
@@ -296,10 +323,10 @@ export default function App() {
           </div>
         )}
 
-        {/* TAB 3: My Stories */}
-        {activeTab === 'stories' && (
+        {/* TAB 3: My Stories (Only for students / unauthenticated guests) */}
+        {activeTab === 'stories' && currentUser?.role !== 'teacher' && (
           <MyStoriesView
-            stories={stories}
+            stories={stories.filter((s) => !currentUser || s.authorUsername === currentUser.username)}
             onOpenStory={handleOpenStory}
             onDeleteStory={handleDeleteStory}
             onStartNewStory={() => handleStartNewStory()}
@@ -309,22 +336,35 @@ export default function App() {
 
         {/* TAB 4: Genç Kalemler Digital Magazine */}
         {activeTab === 'magazine' && (
-          <GencKalemlerView onStartWritingWithGenre={(genre) => handleStartNewStory(genre)} />
+          <GencKalemlerView
+            onStartWritingWithGenre={(genre) => {
+              if (currentUser?.role === 'teacher') {
+                setActiveTab('teacher');
+              } else {
+                handleStartNewStory(genre);
+              }
+            }}
+          />
         )}
 
         {/* TAB 5: Literature Guide */}
         {activeTab === 'guide' && (
           <LiteratureGuideView
-            onStartWritingWithGenre={(genre) => handleStartNewStory(genre)}
+            onStartWritingWithGenre={(genre) => {
+              if (currentUser?.role === 'teacher') {
+                setActiveTab('teacher');
+              } else {
+                handleStartNewStory(genre);
+              }
+            }}
           />
         )}
 
-        {/* TAB 6: Teacher Panel (11 Sections & 10-Criteria Rubric) */}
-        {activeTab === 'teacher' && (
+        {/* TAB 6: Teacher Panel (Dedicated for teachers; also handles any accidental teacher route) */}
+        {(activeTab === 'teacher' || (currentUser?.role === 'teacher' && (activeTab === 'create' || activeTab === 'stories'))) && (
           currentUser?.role === 'teacher' && !currentUser.mustChangePassword ? (
             <TeacherDashboardView
               currentUser={currentUser}
-              onOpenStoryDetail={handleOpenStory}
               onRefreshStories={reloadStories}
             />
           ) : (
@@ -427,10 +467,29 @@ export default function App() {
           reloadStories();
           reloadNotifications();
         }}
+        onSwitchToRegister={() => {
+          setIsTeacherLoginOpen(false);
+          setIsTeacherRegisterOpen(true);
+        }}
         onNeedPasswordChange={(user) => {
           setCurrentUser(user);
           setIsMandatoryPassChange(true);
           setIsTeacherPassChangeOpen(true);
+        }}
+      />
+
+      <TeacherRegisterModal
+        isOpen={isTeacherRegisterOpen}
+        onClose={() => setIsTeacherRegisterOpen(false)}
+        onSuccess={(user) => {
+          setCurrentUser(user);
+          setActiveTab('teacher');
+          reloadStories();
+          reloadNotifications();
+        }}
+        onSwitchToLogin={() => {
+          setIsTeacherRegisterOpen(false);
+          setIsTeacherLoginOpen(true);
         }}
       />
 
@@ -520,9 +579,9 @@ export default function App() {
 
               <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900">
                 <strong className="block mb-1 font-sans text-amber-950 font-bold">
-                  İlk Öğretmen Şifresi Güvenliği:
+                  Öğretmen Hesabı ve Kod Yönetimi:
                 </strong>
-                Varsayılan öğretmen hesabı (<code className="font-mono bg-amber-100 px-1 py-0.5 rounded">ogretmen / 1234</code>) ilk girişte zorunlu şifre değişikliğine tabi tutulur.
+                Öğretmenler kendi hesaplarını oluşturur ve her öğretmene kayıt sırasında sistemce üretilen benzersiz öğretmen kodu (YZR-XXXX) atanır. Öğrenciler bu kod ile öğretmenleriyle eşleşir.
               </div>
             </div>
 

@@ -105,6 +105,9 @@ export interface Story {
   taskId?: string;
   testType?: 'standard' | 'pre_test' | 'post_test';
   publishedWorkId?: string;
+  teacherId?: string;
+  teacherCode?: string;
+  teacherName?: string;
 }
 
 export interface WritingTask {
@@ -149,6 +152,11 @@ export interface User {
   name: string;
   classGrade?: string;
   pseudonym?: string;
+  school?: string;
+  teacherCode?: string; // For teachers: their unique generated code (e.g. YZR-4821)
+  assignedTeacherId?: string; // For students: ID of their teacher
+  assignedTeacherCode?: string; // For students: unique code of their teacher
+  assignedTeacherName?: string; // For students: name of their teacher
   mustChangePassword?: boolean;
   createdAt: string;
 }

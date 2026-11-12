@@ -21,10 +21,22 @@ CREATE TABLE IF NOT EXISTS public.users (
     name TEXT NOT NULL,
     class_grade TEXT DEFAULT '5-A',
     pseudonym TEXT,
+    school TEXT,
+    teacher_code TEXT,
+    assigned_teacher_id TEXT,
+    assigned_teacher_code TEXT,
+    assigned_teacher_name TEXT,
     must_change_password BOOLEAN DEFAULT FALSE,
     password_changed_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Idempotent column additions for existing installations
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS school TEXT;
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS teacher_code TEXT;
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS assigned_teacher_id TEXT;
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS assigned_teacher_code TEXT;
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS assigned_teacher_name TEXT;
 
 -- 3. Hikâyeler ve Yazı Sürümleri Tablosu
 CREATE TABLE IF NOT EXISTS public.stories (
@@ -46,9 +58,19 @@ CREATE TABLE IF NOT EXISTS public.stories (
     task_id TEXT,
     test_type TEXT DEFAULT 'standard',
     published_work_id TEXT,
+    teacher_id TEXT,
+    teacher_code TEXT,
+    teacher_name TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Idempotent column additions for existing installations
+ALTER TABLE public.stories ADD COLUMN IF NOT EXISTS teacher_id TEXT;
+ALTER TABLE public.stories ADD COLUMN IF NOT EXISTS teacher_code TEXT;
+ALTER TABLE public.stories ADD COLUMN IF NOT EXISTS teacher_name TEXT;
+ALTER TABLE public.stories ADD COLUMN IF NOT EXISTS submitted_at TIMESTAMPTZ;
+ALTER TABLE public.stories ADD COLUMN IF NOT EXISTS student_note TEXT;
 
 -- 4. Genç Kalemler Dergisi Yayımlanan Eserler Tablosu
 CREATE TABLE IF NOT EXISTS public.published_works (

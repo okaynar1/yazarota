@@ -71,7 +71,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           </div>
 
-          {/* SAĞ TARAF: Ana Sayfa, Hikâye Oluştur, Yazılarım, Genç Kalemler, Edebiyat Rehberi, Öğrenci Girişi, Öğretmen Girişi */}
+          {/* SAĞ TARAF: Rol Ayrımı Uygulanmış Menü */}
           <nav className="hidden lg:flex items-center space-x-1">
             <button
               onClick={() => setActiveTab('home')}
@@ -85,34 +85,54 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span>Ana Sayfa</span>
             </button>
 
-            <button
-              onClick={() => setActiveTab('create')}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
-                activeTab === 'create'
-                  ? 'bg-teal-500/15 text-teal-300 border border-teal-500/30'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
-              }`}
-            >
-              <Sparkles className="w-4 h-4 text-teal-400" />
-              <span>Hikâye Oluştur</span>
-            </button>
+            {/* Öğrenci Yazma ve Taslak Sekmeleri - Sadece Öğrenciler ve Misafirler İçin */}
+            {!isTeacher && (
+              <>
+                <button
+                  onClick={() => setActiveTab('create')}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                    activeTab === 'create'
+                      ? 'bg-teal-500/15 text-teal-300 border border-teal-500/30'
+                      : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                  }`}
+                >
+                  <Sparkles className="w-4 h-4 text-teal-400" />
+                  <span>Hikâye Oluştur</span>
+                </button>
 
-            <button
-              onClick={() => setActiveTab('stories')}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
-                activeTab === 'stories'
-                  ? 'bg-teal-500/15 text-teal-300 border border-teal-500/30'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
-              }`}
-            >
-              <FileText className="w-4 h-4" />
-              <span>Yazılarım</span>
-              {storiesCount > 0 && (
-                <span className="text-[10px] px-1.5 py-0.2 rounded-full font-bold bg-teal-500/20 text-teal-200 border border-teal-400/30">
-                  {storiesCount}
-                </span>
-              )}
-            </button>
+                <button
+                  onClick={() => setActiveTab('stories')}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                    activeTab === 'stories'
+                      ? 'bg-teal-500/15 text-teal-300 border border-teal-500/30'
+                      : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                  }`}
+                >
+                  <FileText className="w-4 h-4" />
+                  <span>Yazılarım</span>
+                  {storiesCount > 0 && (
+                    <span className="text-[10px] px-1.5 py-0.2 rounded-full font-bold bg-teal-500/20 text-teal-200 border border-teal-400/30">
+                      {storiesCount}
+                    </span>
+                  )}
+                </button>
+              </>
+            )}
+
+            {/* Öğretmen Paneli - Sadece Öğretmen Girişi Yapıldığında */}
+            {isTeacher && (
+              <button
+                onClick={() => setActiveTab('teacher')}
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all ${
+                  activeTab === 'teacher'
+                    ? 'bg-amber-500/25 text-amber-300 border border-amber-500/40 shadow-sm'
+                    : 'text-amber-300 hover:bg-amber-500/10'
+                }`}
+              >
+                <GraduationCap className="w-4 h-4 text-amber-400" />
+                <span>Öğretmen Paneli</span>
+              </button>
+            )}
 
             <button
               onClick={() => setActiveTab('magazine')}
@@ -137,21 +157,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               <BookOpen className="w-4 h-4" />
               <span>Edebiyat Rehberi</span>
             </button>
-
-            {/* If Teacher Logged In, show Teacher Panel Link */}
-            {isTeacher && (
-              <button
-                onClick={() => setActiveTab('teacher')}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
-                  activeTab === 'teacher'
-                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                    : 'text-amber-300 hover:bg-amber-500/10'
-                }`}
-              >
-                <GraduationCap className="w-4 h-4" />
-                <span>Öğretmen Paneli</span>
-              </button>
-            )}
 
             {/* Notification Bell */}
             {currentUser && (
@@ -256,38 +261,57 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span>Ana Sayfa</span>
           </button>
 
-          <button
-            onClick={() => {
-              setActiveTab('create');
-              setMobileMenuOpen(false);
-            }}
-            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium ${
-              activeTab === 'create' ? 'bg-teal-500/20 text-teal-300' : 'text-slate-300'
-            }`}
-          >
-            <Sparkles className="w-4 h-4 text-teal-400" />
-            <span>Hikâye Oluştur</span>
-          </button>
+          {!isTeacher && (
+            <>
+              <button
+                onClick={() => {
+                  setActiveTab('create');
+                  setMobileMenuOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium ${
+                  activeTab === 'create' ? 'bg-teal-500/20 text-teal-300' : 'text-slate-300'
+                }`}
+              >
+                <Sparkles className="w-4 h-4 text-teal-400" />
+                <span>Hikâye Oluştur</span>
+              </button>
 
-          <button
-            onClick={() => {
-              setActiveTab('stories');
-              setMobileMenuOpen(false);
-            }}
-            className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium ${
-              activeTab === 'stories' ? 'bg-teal-500/20 text-teal-300' : 'text-slate-300'
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <FileText className="w-4 h-4" />
-              <span>Yazılarım</span>
-            </div>
-            {storiesCount > 0 && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-teal-300 font-bold">
-                {storiesCount}
-              </span>
-            )}
-          </button>
+              <button
+                onClick={() => {
+                  setActiveTab('stories');
+                  setMobileMenuOpen(false);
+                }}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium ${
+                  activeTab === 'stories' ? 'bg-teal-500/20 text-teal-300' : 'text-slate-300'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <FileText className="w-4 h-4" />
+                  <span>Yazılarım</span>
+                </div>
+                {storiesCount > 0 && (
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-teal-300 font-bold">
+                    {storiesCount}
+                  </span>
+                )}
+              </button>
+            </>
+          )}
+
+          {isTeacher && (
+            <button
+              onClick={() => {
+                setActiveTab('teacher');
+                setMobileMenuOpen(false);
+              }}
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium ${
+                activeTab === 'teacher' ? 'bg-amber-500/20 text-amber-300 font-bold' : 'text-amber-400'
+              }`}
+            >
+              <GraduationCap className="w-4 h-4" />
+              <span>Öğretmen Paneli</span>
+            </button>
+          )}
 
           <button
             onClick={() => {
@@ -314,21 +338,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             <BookOpen className="w-4 h-4" />
             <span>Edebiyat Rehberi</span>
           </button>
-
-          {isTeacher && (
-            <button
-              onClick={() => {
-                setActiveTab('teacher');
-                setMobileMenuOpen(false);
-              }}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium ${
-                activeTab === 'teacher' ? 'bg-amber-500/20 text-amber-300' : 'text-amber-400'
-              }`}
-            >
-              <GraduationCap className="w-4 h-4" />
-              <span>Öğretmen Paneli</span>
-            </button>
-          )}
 
           <div className="pt-3 border-t border-slate-800 space-y-2">
             {!currentUser ? (

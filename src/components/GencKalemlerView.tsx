@@ -121,7 +121,7 @@ export const GencKalemlerView: React.FC<GencKalemlerViewProps> = ({ onStartWriti
           </h1>
 
           <p className="text-slate-300 text-sm sm:text-base font-serif-literary leading-relaxed">
-            Lise öğrencilerimizin rastgele kurgu unsurlarıyla kaleme aldığı, yapay zekâ ve edebiyat öğretmenlerinin rehberliğinde olgunlaşan seçkin edebî eserler.
+            Öğrencilerimizin rastgele kurgu unsurlarıyla kaleme aldığı, yapay zekâ ve edebiyat öğretmenlerinin rehberliğinde olgunlaşan seçkin edebî eserler.
           </p>
 
           {/* Current Issue Bar */}

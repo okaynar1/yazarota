@@ -21,8 +21,12 @@ import {
   ListChecks,
   Cloud,
   X,
+  Lock,
+  UserCheck,
+  Mic,
+  MicOff,
 } from 'lucide-react';
-import { Story, StoryVersion, AIReview, StoryPrompts } from '../types';
+import { Story, StoryVersion, AIReview, StoryPrompts, User as UserType } from '../types';
 import { GENRES } from '../data/writingData';
 import { evaluateStoryWithGemini, saveStory, submitStoryToTeacher } from '../services/api';
 import { WordCloudView } from './WordCloudView';
@@ -33,6 +37,9 @@ interface StoryEditorProps {
   onEvaluationComplete: (review: AIReview, story: Story) => void;
   onCompareVersions: (story: Story) => void;
   onBackToPromptWizard: () => void;
+  currentUser?: UserType | null;
+  onOpenLogin?: () => void;
+  onOpenRegister?: () => void;
   minWordLimit?: number;
   maxWordLimit?: number;
 }
@@ -43,12 +50,16 @@ export const StoryEditor: React.FC<StoryEditorProps> = ({
   onEvaluationComplete,
   onCompareVersions,
   onBackToPromptWizard,
+  currentUser,
+  onOpenLogin,
+  onOpenRegister,
   minWordLimit = 150,
   maxWordLimit = 500,
 }) => {
   const [activeVersionNumber, setActiveVersionNumber] = useState<number>(
     currentStory.currentVersionNumber || currentStory.versions.length || 1
   );
+  const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
 
   const activeVersion =
     currentStory.versions.find((v) => v.versionNumber === activeVersionNumber) ||
@@ -67,7 +78,128 @@ export const StoryEditor: React.FC<StoryEditorProps> = ({
 
   const [isSubmittingToTeacher, setIsSubmittingToTeacher] = useState<boolean>(false);
   const [submitSuccessMessage, setSubmitSuccessMessage] = useState<string | null>(null);
+  const [submitErrorMessage, setSubmitErrorMessage] = useState<string | null>(null);
   const [isWordCloudOpen, setIsWordCloudOpen] = useState<boolean>(false);
+
+  // Voice Typing (Sesle Yaz) states
+  const [isListening, setIsListening] = useState<boolean>(false);
+  const [speechInterim, setSpeechInterim] = useState<string>('');
+  const [voiceNotice, setVoiceNotice] = useState<{ type: 'error' | 'info'; text: string } | null>(null);
+  const recognitionRef = useRef<any>(null);
+
+  const stopVoiceTyping = () => {
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch (e) {}
+      recognitionRef.current = null;
+    }
+    setIsListening(false);
+    setSpeechInterim('');
+  };
+
+  const startVoiceTyping = () => {
+    setVoiceNotice(null);
+
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      setVoiceNotice({
+        type: 'info',
+        text: 'Tarayıcınız sesle yazma (Web Speech API) özelliğini desteklememektedir. Google Chrome, Microsoft Edge veya Safari gibi güncel bir tarayıcı kullanabilirsiniz.',
+      });
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'tr-TR';
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => {
+        setIsListening(true);
+        setSpeechInterim('');
+        setVoiceNotice(null);
+      };
+
+      recognition.onresult = (event: any) => {
+        let interimText = '';
+        let finalizedSpeech = '';
+
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          const transcript = event.results[i][0]?.transcript || '';
+          if (event.results[i].isFinal) {
+            finalizedSpeech += transcript;
+          } else {
+            interimText += transcript;
+          }
+        }
+
+        setSpeechInterim(interimText.trim());
+
+        if (finalizedSpeech.trim()) {
+          setContent((prev) => {
+            const currentTrimmed = prev.trimEnd();
+            const addition = finalizedSpeech.trim();
+            if (!currentTrimmed) return addition;
+            return `${currentTrimmed} ${addition}`;
+          });
+        }
+      };
+
+      recognition.onerror = (event: any) => {
+        console.warn('Speech recognition error:', event.error);
+        if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+          setVoiceNotice({
+            type: 'error',
+            text: 'Mikrofon izni verilmedi. Lütfen tarayıcınızın adres çubuğundaki kilit/izin simgesinden mikrofon erişimini etkinleştiriniz.',
+          });
+          stopVoiceTyping();
+        } else if (event.error === 'network') {
+          setVoiceNotice({
+            type: 'error',
+            text: 'Ses tanıma servisine bağlanırken ağ hatası oluştu. Lütfen internet bağlantınızı kontrol ediniz.',
+          });
+          stopVoiceTyping();
+        } else if (event.error === 'no-speech') {
+          setSpeechInterim('');
+        }
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+        setSpeechInterim('');
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch (err: any) {
+      console.error('Speech recognition start failed:', err);
+      setVoiceNotice({
+        type: 'error',
+        text: 'Sesle yazma başlatılırken bir hata oluştu: ' + (err?.message || 'Bilinmeyen hata'),
+      });
+      setIsListening(false);
+    }
+  };
+
+  const toggleVoiceTyping = () => {
+    if (isListening) {
+      stopVoiceTyping();
+    } else {
+      startVoiceTyping();
+    }
+  };
+
+  // Safe cleanup when switching story, unmounting, or navigating away
+  useEffect(() => {
+    return () => {
+      stopVoiceTyping();
+    };
+  }, [currentStory.id, activeVersionNumber]);
 
   // Sync state when activeVersionNumber changes
   useEffect(() => {
@@ -197,21 +329,60 @@ export const StoryEditor: React.FC<StoryEditorProps> = ({
 
   // Submit to Teacher workflow
   const handleSubmitToTeacher = async () => {
-    if (wordCount < 20) {
-      alert('Öğretmeninize göndermeden önce lütfen metninizi biraz daha geliştiriniz (en az 20 kelime).');
+    // 1. Prevent duplicate submissions
+    if (isSubmittingToTeacher) return;
+
+    // 2. Guard: Student authentication required for teacher submission
+    if (!currentUser || currentUser.role !== 'student') {
+      await performSave(false); // Preserve draft first!
+      setShowLoginRequiredModal(true);
+      return;
+    }
+
+    // 3. Content check: ensure text is not completely empty
+    if (!contentRef.current.trim()) {
+      setSubmitErrorMessage('Lütfen öğretmeninize göndermeden önce hikâye metninizi yazınız.');
       return;
     }
 
     setIsSubmittingToTeacher(true);
     setSubmitSuccessMessage(null);
+    setSubmitErrorMessage(null);
+
     try {
-      await performSave(true);
-      const updated = await submitStoryToTeacher(currentStory.id);
+      // Sync latest user inputs into version
+      const updatedVersions = currentStory.versions.map((v) => {
+        if (v.versionNumber === activeVersionNumber) {
+          return {
+            ...v,
+            title: titleRef.current || currentStory.title || 'Başlıksız Hikâye',
+            content: contentRef.current,
+            wordCount: calculateWordCount(contentRef.current),
+            characterCount: contentRef.current.length,
+            studentNotes: studentNotesRef.current,
+          };
+        }
+        return v;
+      });
+
+      const storyPayload: Partial<Story> = {
+        title: titleRef.current || currentStory.title || 'Başlıksız Hikâye',
+        versions: updatedVersions,
+        updatedAt: new Date().toISOString(),
+      };
+
+      const updated = await submitStoryToTeacher(currentStory.id, storyPayload);
       await onSaveStory(updated);
-      setSubmitSuccessMessage('Tebrikler! Yazınız başarıyla öğretmeninize iletildi.');
-      setTimeout(() => setSubmitSuccessMessage(null), 6000);
+
+      // Exact prompt requirement: “Yazınız öğretmeninize başarıyla gönderilmiştir.”
+      setSubmitSuccessMessage('Yazınız öğretmeninize başarıyla gönderilmiştir.');
+      setTimeout(() => setSubmitSuccessMessage(null), 8000);
     } catch (err: any) {
-      alert(err?.message || 'Öğretmene gönderilirken bir hata oluştu.');
+      console.error('Submit to teacher error:', err);
+      setSubmitErrorMessage(
+        err?.message || 'Yazınız öğretmeninize gönderilemedi. Lütfen bağlantınızı kontrol edip tekrar deneyiniz.'
+      );
+      setTimeout(() => setSubmitErrorMessage(null), 8000);
     } finally {
       setIsSubmittingToTeacher(false);
     }
@@ -243,7 +414,8 @@ export const StoryEditor: React.FC<StoryEditorProps> = ({
 
     await onSaveStory(updatedStory);
     setActiveVersionNumber(newVersionNum);
-    alert(`Sürüm ${newVersionNum} oluşturuldu. Önceki sürümünüz korundu, düzeltmelerinizi bu yeni sürümde yapabilirsiniz.`);
+    setSubmitSuccessMessage(`Sürüm ${newVersionNum} oluşturuldu. Düzeltmelerinizi bu yeni sürümde yapabilirsiniz.`);
+    setTimeout(() => setSubmitSuccessMessage(null), 6000);
   };
 
   const genreObj = GENRES.find((g) => g.id === currentStory.genre) || GENRES[0];
@@ -293,9 +465,61 @@ export const StoryEditor: React.FC<StoryEditorProps> = ({
 
       {/* Submission Success Toast */}
       {submitSuccessMessage && (
-        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs font-semibold flex items-center gap-2 shadow-sm animate-fadeIn">
-          <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-          <span>{submitSuccessMessage}</span>
+        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs font-semibold flex items-center justify-between gap-2 shadow-sm animate-fadeIn">
+          <div className="flex items-center gap-2">
+            <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+            <span>{submitSuccessMessage}</span>
+          </div>
+          <button
+            onClick={() => setSubmitSuccessMessage(null)}
+            className="p-1 hover:bg-emerald-100 rounded-lg text-emerald-700"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Submission Error Toast */}
+      {submitErrorMessage && (
+        <div className="p-4 rounded-2xl bg-rose-50 border border-rose-300 text-rose-900 text-xs font-semibold flex items-center justify-between gap-2 shadow-sm animate-fadeIn">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="w-5 h-5 text-rose-600 flex-shrink-0" />
+            <span>{submitErrorMessage}</span>
+          </div>
+          <button
+            onClick={() => setSubmitErrorMessage(null)}
+            className="p-1 hover:bg-rose-100 rounded-lg text-rose-700"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Voice Typing Notice / Error Banner */}
+      {voiceNotice && (
+        <div
+          className={`p-4 rounded-2xl border text-xs font-semibold flex items-center justify-between gap-2 shadow-sm animate-fadeIn ${
+            voiceNotice.type === 'error'
+              ? 'bg-rose-50 border-rose-300 text-rose-900'
+              : 'bg-cyan-50 border-cyan-300 text-cyan-900'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            <AlertCircle
+              className={`w-5 h-5 flex-shrink-0 ${
+                voiceNotice.type === 'error' ? 'text-rose-600' : 'text-cyan-600'
+              }`}
+            />
+            <span>{voiceNotice.text}</span>
+          </div>
+          <button
+            onClick={() => setVoiceNotice(null)}
+            className={`p-1 rounded-lg ${
+              voiceNotice.type === 'error' ? 'hover:bg-rose-100 text-rose-700' : 'hover:bg-cyan-100 text-cyan-700'
+            }`}
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
       )}
 
@@ -466,6 +690,34 @@ export const StoryEditor: React.FC<StoryEditorProps> = ({
               )}
             </span>
 
+            {/* Voice Typing (Sesle Yaz) Button */}
+            <button
+              type="button"
+              onClick={toggleVoiceTyping}
+              title={isListening ? 'Sesle yazmayı durdur' : 'Sesle Yaz (Türkçe Konuşma Tanıma)'}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-all ${
+                isListening
+                  ? 'bg-rose-50 text-rose-700 border border-rose-300 shadow-sm'
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+              }`}
+            >
+              {isListening ? (
+                <>
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-600"></span>
+                  </span>
+                  <MicOff className="w-3.5 h-3.5 text-rose-600" />
+                  <span>Durdur</span>
+                </>
+              ) : (
+                <>
+                  <Mic className="w-3.5 h-3.5 text-slate-600" />
+                  <span>Sesle Yaz</span>
+                </>
+              )}
+            </button>
+
             <button
               onClick={() => performSave(true)}
               className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium transition-colors"
@@ -494,7 +746,7 @@ export const StoryEditor: React.FC<StoryEditorProps> = ({
         </div>
 
         {/* Text Area Canvas */}
-        <div className="px-6 sm:px-10 py-6 flex-1">
+        <div className="px-6 sm:px-10 py-6 flex-1 flex flex-col">
           <textarea
             placeholder={
               currentStory.genre === 'siir'
@@ -508,6 +760,23 @@ export const StoryEditor: React.FC<StoryEditorProps> = ({
             rows={14}
             className="w-full resize-y text-base sm:text-lg text-slate-800 placeholder:text-slate-300 outline-none font-serif-literary leading-relaxed min-h-[360px]"
           />
+
+          {/* Active Listening Indicator */}
+          {isListening && (
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-rose-700 bg-rose-50/90 px-3.5 py-2 rounded-xl border border-rose-200 animate-fadeIn">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-600"></span>
+              </span>
+              <Mic className="w-3.5 h-3.5 text-rose-600 flex-shrink-0" />
+              <span className="font-semibold">Türkçe ses tanıma devrede... Konuşun, söyledikleriniz metne aktarılıyor.</span>
+              {speechInterim && (
+                <span className="italic text-slate-600 bg-white/70 px-2 py-0.5 rounded border border-rose-100">
+                  “{speechInterim}”
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Live Counters & Progress Bar Footer */}
@@ -569,14 +838,59 @@ export const StoryEditor: React.FC<StoryEditorProps> = ({
             </button>
 
             {/* Submit to Teacher Button */}
-            <button
-              onClick={handleSubmitToTeacher}
-              disabled={isSubmittingToTeacher}
-              className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-bold text-xs bg-amber-600 hover:bg-amber-700 active:scale-[0.98] text-white shadow-md shadow-amber-700/20 transition-all"
-            >
-              <Send className="w-3.5 h-3.5" />
-              <span>{isSubmittingToTeacher ? 'Gönderiliyor...' : 'Öğretmene Gönder'}</span>
-            </button>
+            {(() => {
+              const isPending =
+                currentStory.status === 'pending_teacher' || currentStory.status === 'resubmitted';
+              const isApproved =
+                currentStory.status === 'approved' ||
+                currentStory.status === 'nominated_for_magazine' ||
+                currentStory.status === 'published';
+              const isRevision = currentStory.status === 'revision_requested';
+
+              let btnBg = 'bg-amber-600 hover:bg-amber-700 shadow-amber-700/20';
+              let btnTitle = 'Yazınızı değerlendirme için öğretmeninize gönderin';
+              let btnText = 'Öğretmene Gönder';
+              let icon = <Send className="w-3.5 h-3.5" />;
+
+              if (!currentUser || currentUser.role !== 'student') {
+                btnBg = 'bg-amber-700/90 hover:bg-amber-700 shadow-amber-800/20';
+                btnTitle = 'Öğretmene göndermek için öğrenci girişi gereklidir';
+                icon = <Lock className="w-3.5 h-3.5 text-amber-200" />;
+              } else if (isSubmittingToTeacher) {
+                btnBg = 'bg-amber-600/80 cursor-wait';
+                btnText = 'Gönderiliyor...';
+                icon = <RotateCcw className="w-3.5 h-3.5 animate-spin" />;
+              } else if (isPending) {
+                btnBg = 'bg-emerald-600/90 text-white shadow-emerald-700/20';
+                btnTitle = 'Yazınız öğretmeninize iletilmiştir ve değerlendirme sırasında beklemektedir.';
+                btnText = 'Öğretmeninizde Beklemede';
+                icon = <CheckCircle className="w-3.5 h-3.5 text-emerald-200" />;
+              } else if (isApproved) {
+                btnBg = 'bg-teal-700 text-white shadow-teal-800/20';
+                btnTitle = 'Yazınız öğretmeniniz tarafından onaylanmıştır.';
+                btnText = 'Öğretmeniniz Onayladı';
+                icon = <CheckCircle className="w-3.5 h-3.5 text-teal-200" />;
+              } else if (isRevision) {
+                btnBg = 'bg-amber-600 hover:bg-amber-700 shadow-amber-700/20';
+                btnTitle = 'Öğretmeninizin önerilerine göre düzenlediğiniz metni tekrar iletin';
+                btnText = 'Düzeltmeyi Öğretmene Gönder';
+                icon = <Send className="w-3.5 h-3.5" />;
+              }
+
+              return (
+                <button
+                  onClick={handleSubmitToTeacher}
+                  disabled={isSubmittingToTeacher || isPending || isApproved}
+                  className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-bold text-xs active:scale-[0.98] text-white shadow-md transition-all ${btnBg} ${
+                    isPending || isApproved ? 'cursor-default' : 'cursor-pointer'
+                  }`}
+                  title={btnTitle}
+                >
+                  {icon}
+                  <span>{btnText}</span>
+                </button>
+              );
+            })()}
           </div>
         </div>
       </div>
@@ -665,6 +979,69 @@ export const StoryEditor: React.FC<StoryEditorProps> = ({
               }}
               initialVersionNumber={activeVersionNumber}
             />
+          </div>
+        </div>
+      )}
+
+      {/* Guest Login Required for Teacher Submission Modal */}
+      {showLoginRequiredModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl border border-slate-200 space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="w-12 h-12 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center shrink-0 text-amber-700">
+                <GraduationCap className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-bold text-base text-slate-900 font-display">
+                  Öğretmene Gönderim İçin Giriş Gerekli
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Öğretmeninizin yazınızı inceleyebilmesi ve geri bildirim verebilmesi için öğrenci hesabınızla eşleşmesi gerekir.
+                </p>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-teal-50 border border-teal-200 text-xs text-teal-900 space-y-1">
+              <div className="font-bold flex items-center gap-1.5 text-teal-950">
+                <CheckCircle className="w-4 h-4 text-teal-600" />
+                <span>Taslağınız Güvenle Korunmaktadır</span>
+              </div>
+              <p className="font-serif-literary text-[11px] leading-relaxed">
+                Yazdığınız metin, başlık ve kurgu kartları kaydedildi. Giriş yaptıktan veya öğretmen kodunuzla kayıt olduktan sonra yazınızı hemen öğretmeninize gönderebilirsiniz.
+              </p>
+            </div>
+
+            <div className="space-y-2 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowLoginRequiredModal(false);
+                  onOpenLogin?.();
+                }}
+                className="w-full py-2.5 px-4 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-sm transition-all cursor-pointer"
+              >
+                Mevcut Öğrenci Hesabıyla Giriş Yap
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setShowLoginRequiredModal(false);
+                  onOpenRegister?.();
+                }}
+                className="w-full py-2.5 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-sm transition-all cursor-pointer"
+              >
+                Öğretmen Kodu ile Yeni Kayıt Ol
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowLoginRequiredModal(false)}
+                className="w-full py-2 px-4 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-xs transition-colors cursor-pointer"
+              >
+                Taslağı Düzenlemeye Devam Et (Kapat)
+              </button>
+            </div>
           </div>
         </div>
       )}

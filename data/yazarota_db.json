@@ -30,12 +30,13 @@
       "id": "user-teacher-1",
       "name": "Türk Dili ve Edebiyatı Zümresi",
       "role": "teacher",
-      "salt": "f1965841e29989bba3ccdd23124a87de",
+      "salt": "38adbf3e59b67ac878e1b2e91136514e",
       "username": "ogretmen",
       "createdAt": "2026-10-27T08:10:20.148Z",
       "classGrade": "Tüm Şubeler",
-      "passwordHash": "a8428f5c68196b7e25197374fb871c3c85c842ff4c615b8715ddfda76ec25b23be51fd2cd2f51d0b5b0a63ad6c18661cc7b9ef0d82fe91b37e94e20218aa292b",
-      "passwordChangedAt": "2026-10-29T17:10:55.003Z",
+      "teacherCode": "YZR-1001",
+      "passwordHash": "3ddfc67bee042734fdbc91566c68b479cfebb360da4012cf38ef0c15ac4d0bf685f3998a0e4e843461786c8b1ac7ed6dbcee911f2d561bdda24deddd99b1633e",
+      "passwordChangedAt": "2026-10-31T14:59:44.701Z",
       "mustChangePassword": false
     },
     {
@@ -48,7 +49,10 @@
       "pseudonym": "Kelimelerin İzi",
       "classGrade": "10-A",
       "passwordHash": "3ff3e92b66df8b61b35f472d2cd89c05a16480393ec5269553f0066fd16edf4473721ad5e8916d9ffb8fb99e2ed32bf1bb6076c4814b9b37a17e0f8b1e259e7f",
-      "mustChangePassword": false
+      "assignedTeacherId": "user-teacher-1",
+      "mustChangePassword": false,
+      "assignedTeacherCode": "YZR-1001",
+      "assignedTeacherName": "Türk Dili ve Edebiyatı Zümresi"
     },
     {
       "id": "user-student-2",
@@ -60,7 +64,10 @@
       "pseudonym": "Mavi Martı",
       "classGrade": "11-B",
       "passwordHash": "3ff3e92b66df8b61b35f472d2cd89c05a16480393ec5269553f0066fd16edf4473721ad5e8916d9ffb8fb99e2ed32bf1bb6076c4814b9b37a17e0f8b1e259e7f",
-      "mustChangePassword": false
+      "assignedTeacherId": "user-teacher-1",
+      "mustChangePassword": false,
+      "assignedTeacherCode": "YZR-1001",
+      "assignedTeacherName": "Türk Dili ve Edebiyatı Zümresi"
     },
     {
       "id": "user-1793088623259-u6tv",
@@ -72,7 +79,10 @@
       "pseudonym": "Gece Kuşu",
       "classGrade": "10-B",
       "passwordHash": "b12c2c3506ca1afad2670c271ea80c548f3855f653c3096ae0bb372159b470f24c9df5c23ec8fa3361643ea16d252b6d0a7143abba4f4179bbb8826e05029b41",
-      "mustChangePassword": false
+      "assignedTeacherId": "user-teacher-1",
+      "mustChangePassword": false,
+      "assignedTeacherCode": "YZR-1001",
+      "assignedTeacherName": "Türk Dili ve Edebiyatı Zümresi"
     },
     {
       "id": "user-1793088654302-782i",
@@ -84,7 +94,10 @@
       "pseudonym": "Mavi Kalem",
       "classGrade": "10-C",
       "passwordHash": "915edc1b293035b4c4d7c11d62eda3cca4b93c19394132b4d76c001add0f14f60f1e3173f18c8326c75f6ab7ec5b6d05f39330f680e2347e02e02aeafec1a8ff",
-      "mustChangePassword": false
+      "assignedTeacherId": "user-teacher-1",
+      "mustChangePassword": false,
+      "assignedTeacherCode": "YZR-1001",
+      "assignedTeacherName": "Türk Dili ve Edebiyatı Zümresi"
     },
     {
       "id": "user-1793088654441-bdoa",
@@ -96,7 +109,10 @@
       "pseudonym": "Burak Kaya",
       "classGrade": "Genel",
       "passwordHash": "61d751671e98ec2cd38380e6eb657d6f853095c73b44261691437376ec0172728aeb2112d847e35646a86a81112da3eb58166a95236aa0b8dcd1e7a78eb58228",
-      "mustChangePassword": false
+      "assignedTeacherId": "user-teacher-1",
+      "mustChangePassword": false,
+      "assignedTeacherCode": "YZR-1001",
+      "assignedTeacherName": "Türk Dili ve Edebiyatı Zümresi"
     },
     {
       "id": "user-1793265886712-p4n3",
@@ -108,7 +124,10 @@
       "pseudonym": "Yıldız Avcısı",
       "classGrade": "6-B",
       "passwordHash": "462d7f47d41ddfe6b77912a314ae442bdd8c35735ead419036cf6de2e5dbe10c2f698f480d58d291c7482e9dac73d5bfa9fac17ddbdd5477a3f19815639884e5",
-      "mustChangePassword": false
+      "assignedTeacherId": "user-teacher-1",
+      "mustChangePassword": false,
+      "assignedTeacherCode": "YZR-1001",
+      "assignedTeacherName": "Türk Dili ve Edebiyatı Zümresi"
     },
     {
       "id": "user-1793293640510-sh2n",
@@ -120,7 +139,10 @@
       "pseudonym": "berkay",
       "classGrade": "8-A",
       "passwordHash": "839ddb2cc390ac579439fd23be73fda0a106a0dce72a181aee89010c61ee6a5467b017001bfd4d38e877faab537b1d7db4898f34425cc076f5eb95408feb9d2b",
-      "mustChangePassword": false
+      "assignedTeacherId": "user-teacher-1",
+      "mustChangePassword": false,
+      "assignedTeacherCode": "YZR-1001",
+      "assignedTeacherName": "Türk Dili ve Edebiyatı Zümresi"
     },
     {
       "id": "user-1793361514293-7v5v",
@@ -132,19 +154,133 @@
       "pseudonym": "Güneş Yolcusu",
       "classGrade": "7-B",
       "passwordHash": "8a6b8a230320d2fd823b01a18076c011c35ea449cadfbfef1f82b6e2a7a91794fba2d08b0433928cd504e38c024e3fadcc09f013037f7d6fb9e3e2689bb25683",
-      "mustChangePassword": false
+      "assignedTeacherId": "user-teacher-1",
+      "mustChangePassword": false,
+      "assignedTeacherCode": "YZR-1001",
+      "assignedTeacherName": "Türk Dili ve Edebiyatı Zümresi"
     },
     {
       "id": "user-1793363191318-5ejs",
-      "username": "ogrenci_orta8c",
-      "passwordHash": "edf7b8c0a934455835f3174809d473b2ecde8ac8d0c21eafb18ae11903c010963db7dd7534ed184a30a8541106288c375dc909200037006731dead7281d2c004",
-      "salt": "16e86921dc0d1f9d5f2a357f7f303586",
-      "role": "student",
       "name": "Zeynep Çelik",
-      "classGrade": "8-C",
+      "role": "student",
+      "salt": "16e86921dc0d1f9d5f2a357f7f303586",
+      "username": "ogrenci_orta8c",
+      "createdAt": "2026-10-30T12:26:31.318Z",
       "pseudonym": "Kuzey Rüzgarı",
+      "classGrade": "8-C",
+      "passwordHash": "edf7b8c0a934455835f3174809d473b2ecde8ac8d0c21eafb18ae11903c010963db7dd7534ed184a30a8541106288c375dc909200037006731dead7281d2c004",
+      "assignedTeacherId": "user-teacher-1",
       "mustChangePassword": false,
-      "createdAt": "2026-10-30T12:26:31.318Z"
+      "assignedTeacherCode": "YZR-1001",
+      "assignedTeacherName": "Türk Dili ve Edebiyatı Zümresi"
+    },
+    {
+      "id": "user-teacher-1793439364218-01mr",
+      "name": "Fatma Öğretmen",
+      "role": "teacher",
+      "salt": "c141c27f921bdae68d494cb3236b2845",
+      "school": "Mehmet Akif Ersoy Ortaokulu",
+      "username": "fatma_ogretmen",
+      "createdAt": "2026-10-31T09:36:04.218Z",
+      "teacherCode": "YZR-7039",
+      "passwordHash": "cb5206a03c057f6077d03b9240697b83c78b8e36e41f25fccbc408e627bf7e6dbad40dd58a238ccaccaa8971647e78a649ebbad35144f89d9b6eaeb399d7c120",
+      "mustChangePassword": false
+    },
+    {
+      "id": "user-1793439373616-6h6p",
+      "name": "Ali Veli",
+      "role": "student",
+      "salt": "f12a00db8d795073e2ae22fe6e8ade62",
+      "username": "aliveli",
+      "createdAt": "2026-10-31T09:36:13.616Z",
+      "pseudonym": "Genç Kalem Ali",
+      "classGrade": "6-B",
+      "passwordHash": "acbdb79c4692868e9efbb87e8042dd38117e5c4ee1221e1cc51dc5eb9c2770520d5651eee9393e832797db3a79dc3df515bf7b2e7f2a060592df5a27eb735df9",
+      "assignedTeacherId": "user-teacher-1793439364218-01mr",
+      "mustChangePassword": false,
+      "assignedTeacherCode": "YZR-7039",
+      "assignedTeacherName": "Fatma Öğretmen"
+    },
+    {
+      "id": "user-teacher-1793439505835-r4hw",
+      "name": "Zeynep Öğretmen",
+      "role": "teacher",
+      "salt": "1f185b708d3aeaf6080cfcc804b3cd39",
+      "school": "Yunus Emre Ortaokulu",
+      "username": "zeynep_hoca_5814",
+      "createdAt": "2026-10-31T09:38:25.835Z",
+      "teacherCode": "YZR-7113",
+      "passwordHash": "a0bd8606e2052fe976294ba8fc0ddd39c586f90d64883c69447558a799d7d2e3b2261cf72f5c3f2532efeedf792e70a428ca7a00ddf63ae4b7559a6a9de4f409",
+      "mustChangePassword": false
+    },
+    {
+      "id": "user-1793439505877-wero",
+      "name": "Murat Çelik",
+      "role": "student",
+      "salt": "4df7250e211d40fce8fadf6b2c2b82c4",
+      "username": "ogrenci_5855",
+      "createdAt": "2026-10-31T09:38:25.877Z",
+      "pseudonym": "Mavi Kanat",
+      "classGrade": "7-B",
+      "passwordHash": "2829f543f20244a78fb28c481037b91411f90063370e2aedd43e1fd881b16f036386ee00198a291f5cbb2b323a36ce55e46ea98631f8d5e1a296f1246d59bd12",
+      "assignedTeacherId": "user-teacher-1793439505835-r4hw",
+      "mustChangePassword": false,
+      "assignedTeacherCode": "YZR-7113",
+      "assignedTeacherName": "Zeynep Öğretmen"
+    },
+    {
+      "id": "user-teacher-1793542565905-r7pe",
+      "name": "Selin Çelik",
+      "role": "teacher",
+      "salt": "48be9362997470ebcc5449219d180244",
+      "school": "Gazi Ortaokulu",
+      "username": "turkce_ogretmeni_5889",
+      "createdAt": "2026-11-01T14:16:05.905Z",
+      "teacherCode": "YZR-7363",
+      "passwordHash": "c08ab9918f06a07feef20a86fced8e970cdc31e3ba2d40b653ff2d5ce7aaf917bb9b108e9bdabf3568f6404ef08f41a69f5fefff2c4478b350a4286be48ce4d7",
+      "mustChangePassword": false
+    },
+    {
+      "id": "user-1793542565955-9nws",
+      "name": "Mert Demir",
+      "role": "student",
+      "salt": "b855d68d3143922ca0c403a1e7103d91",
+      "username": "ogrenci_yeni_5931",
+      "createdAt": "2026-11-01T14:16:05.955Z",
+      "pseudonym": "Mert Demir",
+      "classGrade": "6-B",
+      "passwordHash": "ffd6866b0e07dbbdf0aa6a3fdf36eda369e6075f566f76ac8226b2da0421073fdf816d8d99f9d5e6c2a4440fbbe73f379ce78ec0e772a16bc6593a657b178f87",
+      "assignedTeacherId": "user-teacher-1793542565905-r7pe",
+      "mustChangePassword": false,
+      "assignedTeacherCode": "YZR-7363",
+      "assignedTeacherName": "Selin Çelik"
+    },
+    {
+      "id": "user-teacher-1793542972731-vtd2",
+      "name": "Osman Kaynar",
+      "role": "teacher",
+      "salt": "a8997e0e6144e38b9a98652fbbb9ffe0",
+      "school": "Selçuklu Bilim ve Sanat Merkezi",
+      "username": "oskay42",
+      "createdAt": "2026-11-01T14:22:52.731Z",
+      "teacherCode": "YZR-2012",
+      "passwordHash": "6bd47dbfdd1e949b8f57c59c2ebc9b267068b94ec8597d94be48035d449d200428ea83a5c52deadfbd0975b6cf085987b0d3073dc4ae9b3685d96ebd2016bfe1",
+      "mustChangePassword": false
+    },
+    {
+      "id": "user-1793543191078-4x0l",
+      "name": "Ayşe Kaynar",
+      "role": "student",
+      "salt": "5a93f6a10d4cd282772b6d62be63c93f",
+      "username": "ayse42",
+      "createdAt": "2026-11-01T14:26:31.078Z",
+      "pseudonym": "Ayber",
+      "classGrade": "7-A",
+      "passwordHash": "800888e6ce8faf906159baa442ae7fc192eed08cebd35b9522540ce5d2feeb9854b81874cc576b7d2e4d9e3c345755f57246180c27c2e3dca5fa41f96981c2d0",
+      "assignedTeacherId": "user-teacher-1793542972731-vtd2",
+      "mustChangePassword": false,
+      "assignedTeacherCode": "YZR-2012",
+      "assignedTeacherName": "Osman Kaynar"
     }
   ],
   "classes": [
@@ -176,32 +312,202 @@
   ],
   "stories": [
     {
-      "title": "Kuzey Işıklarının Altında",
-      "genre": "hikaye",
-      "place": "Karlı Vadi",
-      "time": "Kış gecesi",
-      "character": "Gezgin Fotoğrafçı",
-      "surpriseCard": "Eski bir pusula",
-      "content": "Gök yüzünde yeşil ve mor dalgalar dans ederken dondurucu ayazın ortasında eski pusulayı çıkardı.",
-      "id": "story-1793363197243-ld525",
-      "authorUsername": "ogrenci_orta8c",
-      "authorName": "Zeynep Çelik",
-      "authorClass": "8-C",
+      "id": "story-1793552422492",
+      "time": "Güneş tutulmasının gökyüzünü yedi dakika boyunca zifiri karanlığa boğduğu anda",
+      "genre": "masal",
+      "place": "Gece yarısı sadece neon ışıklarıyla aydınlanan sessiz bir banliyö vagonu",
+      "title": "Denem hikaye",
+      "status": "pending_teacher",
+      "versions": [
+        {
+          "id": "v1-1793552422492",
+          "title": "Denem hikaye",
+          "content": "Deneme sürümüdür. Lütfen kontrol ediniz:)",
+          "createdAt": "2026-11-01T17:00:22.492Z",
+          "wordCount": 5,
+          "studentNotes": "İlk taslak.",
+          "versionNumber": 1,
+          "characterCount": 41
+        }
+      ],
+      "character": "Kitapların arasına gizlenmiş şifreli mektupları toplayıp çözen meraklı bir genç araştırmacı",
+      "createdAt": "2026-11-01T17:00:22.492Z",
+      "teacherId": "user-teacher-1793542972731-vtd2",
+      "updatedAt": "2026-11-01T17:02:11.266Z",
+      "authorName": "Ayşe Kaynar",
+      "authorClass": "7-A",
+      "studentCode": "OGR-5184",
+      "submittedAt": "2026-11-02T19:56:41.460Z",
+      "teacherCode": "YZR-2012",
+      "teacherName": "Osman Kaynar",
+      "surpriseCard": "Cebinde bulunan eski bir anahtarın açabileceği tek kapının hemen önünde olduğu fark edilir.",
+      "authorUsername": "ayse42",
+      "currentVersionNumber": 1
+    },
+    {
+      "id": "story-1793543241191",
+      "time": "Fırtınanın koptuğu ve tüm kasabanın elektriklerinin kesildiği puslu bir sabah",
+      "genre": "bilim_kurgu",
+      "place": "Kıyıya vurmuş devasa bir ahşap kalyonun yosun tutmuş iskeleti",
+      "title": "Bir yazma hikayesi",
       "status": "draft",
       "versions": [
         {
-          "id": "ver-1",
+          "id": "v1-1793543241191",
+          "title": "Bir yazma hikayesi",
+          "content": "Bu güzel platform için emek veren herkese teşekkür ederim. İyi çalışmalar",
+          "createdAt": "2026-11-01T14:27:21.191Z",
+          "wordCount": 11,
+          "studentNotes": "İlk taslak.",
           "versionNumber": 1,
-          "title": "Kuzey Işıklarının Altında",
-          "content": "Gök yüzünde yeşil ve mor dalgalar dans ederken dondurucu ayazın ortasında eski pusulayı çıkardı.",
-          "wordCount": 14,
-          "characterCount": 96,
-          "createdAt": "2026-10-30T12:26:37.243Z"
+          "characterCount": 73
         }
       ],
-      "currentVersionNumber": 1,
+      "character": "Koleksiyonundaki antika aynada kendi yüzünden başka bir yüz gören meraklı bir genç",
+      "createdAt": "2026-11-01T14:27:21.191Z",
+      "teacherId": "user-teacher-1793542972731-vtd2",
+      "updatedAt": "2026-11-01T16:56:36.064Z",
+      "authorName": "Ayşe Kaynar",
+      "authorClass": "7-A",
+      "studentCode": "OGR-5184",
+      "teacherCode": "YZR-2012",
+      "teacherName": "Osman Kaynar",
+      "surpriseCard": "Karakter, başına gelen tüm bu serüvenin aslında görünmez bir göz tarafından hazırlanan bir sınav olduğunu keşfeder.",
+      "authorUsername": "ayse42",
+      "currentVersionNumber": 1
+    },
+    {
+      "id": "story-1793441623553",
+      "time": "Yaz tatilinin son haftasında, akşam serinliğinin çöktüğü hüzünlü bir pazar günü",
+      "genre": "ani",
+      "place": "Zamanın sanki bir asır önce durduğu taş döşeli ıssız bir saat kulesi meydanı",
+      "title": "dsds",
+      "status": "draft",
+      "versions": [
+        {
+          "id": "v1-1793441623554",
+          "title": "dsds",
+          "content": "gfbvbgnghg",
+          "createdAt": "2026-10-31T10:13:43.554Z",
+          "wordCount": 1,
+          "studentNotes": "İlk taslak.",
+          "versionNumber": 1,
+          "characterCount": 10
+        }
+      ],
+      "character": "Kitapların arasına gizlenmiş şifreli mektupları toplayıp çözen meraklı bir genç araştırmacı",
+      "createdAt": "2026-10-31T10:13:43.554Z",
+      "updatedAt": "2026-10-31T10:14:07.528Z",
+      "studentCode": "OGR-5184",
+      "surpriseCard": "Hikâyedeki sessiz bir hayvan veya mekanik alet aniden zekâ belirtisi göstererek doğru yolu işaret eder.",
+      "currentVersionNumber": 1
+    },
+    {
+      "id": "story-1793439505919-kq2cv",
+      "genre": "macera",
+      "title": "Gümüş Pusula",
+      "status": "pending_teacher",
+      "content": "Bu bir ortaokul edebiyat denemesidir ve yeterli kelime icermektedir. Hikayenin serim dugum ve cozum bolumleri mevcuttur.",
+      "versions": [
+        {
+          "id": "ver-1",
+          "title": "Gümüş Pusula",
+          "content": "Bu bir ortaokul edebiyat denemesidir ve yeterli kelime icermektedir. Hikayenin serim dugum ve cozum bolumleri mevcuttur.",
+          "createdAt": "2026-10-31T09:38:25.919Z",
+          "wordCount": 16,
+          "versionNumber": 1,
+          "characterCount": 120
+        }
+      ],
+      "createdAt": "2026-10-31T09:38:25.919Z",
+      "teacherId": "user-teacher-1793439505835-r4hw",
+      "updatedAt": "2026-10-31T09:38:25.940Z",
+      "authorName": "Murat Çelik",
+      "authorClass": "7-B",
+      "teacherCode": "YZR-7113",
+      "teacherName": "Zeynep Öğretmen",
+      "authorUsername": "ogrenci_5855",
+      "currentVersionNumber": 1
+    },
+    {
+      "id": "story-1793437735129",
+      "time": "Osmanlı döneminde ramazan ayının serin bir ikindi vaktinde",
+      "genre": "gunluk",
+      "place": "Derin bir kanyonun iki yakasını birleştiren rüzgarda sallanan eski asma köprü",
+      "title": "deneme",
+      "status": "pending_teacher",
+      "versions": [
+        {
+          "id": "v1-1793437735129",
+          "title": "deneme",
+          "content": "Paslı rayların arasına dolan sarmaşıklar, gece yarısı esen serin güz rüzgarıyla fısıldıyordu. Saat kulesinin kırık kadranı tam 03.17’de donup kalmıştı. Emekli edebiyat öğretmeni Selim Bey, yakasını kaldırıp elindeki titrek feneri eski bekleme salonuna doğrulttu. Otuz yıl önce bu perondan el sallayıp bir daha haber alamadığı en parlak öğrencisi Cemil’in hatırası göğsünde ince bir sızıydı. Tam o sırada, peron bankının çatlak tahtasına sıkıştırılmış, kırmızı balmumuyla mühürlenmiş sarı bir zarf çarptı gözüne. Zarfın üzerinde silinmeye yüz tutmuş bir mürekkeple sadece şu yazıyordu: \"Geç kalmış bir özür, hocama...\" Zarfı açtığında içinden çıkan sararmış kurutulmuş akasya yaprağı, geçmişin tüm karanlığını bir anda aydınlattı.\n\nÖğretmen & Yayın Kurulu Değerlendirmesi",
+          "createdAt": "2026-10-31T09:08:55.129Z",
+          "wordCount": 104,
+          "studentNotes": "İlk taslak.",
+          "versionNumber": 1,
+          "characterCount": 770
+        }
+      ],
+      "character": "Yıldızların haritasını avucunun içi gibi bilen ve sadece rüzgara güvenen genç bir denizci",
+      "createdAt": "2026-10-31T09:08:55.129Z",
+      "updatedAt": "2026-10-31T09:12:26.320Z",
+      "studentCode": "OGR-5184",
+      "surpriseCard": "Yıllardır açılmamış kilitli devasa kapı, gecenin tam yarısında kendi kendine hafifçe aralanır.",
+      "currentVersionNumber": 1
+    },
+    {
+      "id": "story-1793372909966",
+      "time": "Gece yarısı saat tam 03.17’de, herkesin derin uykuda olduğu bir anda",
+      "genre": "polisiye",
+      "place": "Gündüz vakti bile güneş ışığını geçirmeyen sisli bir çam ormanı",
+      "title": "Başlıksız Hikâye",
+      "status": "draft",
+      "versions": [
+        {
+          "id": "v1-1793372909971",
+          "title": "Başlıksız Hikâye",
+          "content": "",
+          "createdAt": "2026-10-30T15:08:29.966Z",
+          "wordCount": 0,
+          "studentNotes": "İlk taslak.",
+          "versionNumber": 1,
+          "characterCount": 0
+        }
+      ],
+      "character": "Yıldızların haritasını avucunun içi gibi bilen ve sadece rüzgara güvenen genç bir denizci",
+      "createdAt": "2026-10-30T15:08:29.966Z",
+      "updatedAt": "2026-10-30T15:08:47.854Z",
+      "studentCode": "ogr 210",
+      "surpriseCard": "Karakter beklenmedik, imzasız ve üzerinde eski bir balmumu mühür olan bir mektup alır.",
+      "currentVersionNumber": 1
+    },
+    {
+      "id": "story-1793363197243-ld525",
+      "time": "Kış gecesi",
+      "genre": "hikaye",
+      "place": "Karlı Vadi",
+      "title": "Kuzey Işıklarının Altında",
+      "status": "draft",
+      "content": "Gök yüzünde yeşil ve mor dalgalar dans ederken dondurucu ayazın ortasında eski pusulayı çıkardı.",
+      "versions": [
+        {
+          "id": "ver-1",
+          "title": "Kuzey Işıklarının Altında",
+          "content": "Gök yüzünde yeşil ve mor dalgalar dans ederken dondurucu ayazın ortasında eski pusulayı çıkardı.",
+          "createdAt": "2026-10-30T12:26:37.243Z",
+          "wordCount": 14,
+          "versionNumber": 1,
+          "characterCount": 96
+        }
+      ],
+      "character": "Gezgin Fotoğrafçı",
       "createdAt": "2026-10-30T12:26:37.243Z",
-      "updatedAt": "2026-10-30T12:26:37.243Z"
+      "updatedAt": "2026-10-30T12:26:37.243Z",
+      "authorName": "Zeynep Çelik",
+      "authorClass": "8-C",
+      "surpriseCard": "Eski bir pusula",
+      "authorUsername": "ogrenci_orta8c",
+      "currentVersionNumber": 1
     },
     {
       "id": "story-1793361526399-901f6",
@@ -617,6 +923,116 @@
     }
   ],
   "notifications": [
+    {
+      "id": "notif-1793649829077-9gv4",
+      "userId": "oskay42",
+      "userRole": "teacher",
+      "title": "Yeni Değerlendirme Talebi",
+      "message": "Cemre Yılmaz (7-A), “Gece Yolculuğu ve Fener” adlı eserini incelemeniz için gönderdi.",
+      "storyId": "story-test-3537",
+      "type": "submission",
+      "read": false,
+      "createdAt": "2026-11-02T20:03:49.077Z"
+    },
+    {
+      "id": "notif-1793649578686-48an",
+      "read": false,
+      "type": "submission",
+      "title": "Yeni Değerlendirme Talebi",
+      "userId": "oskay42",
+      "message": "Cemre Yılmaz (7-A), “Geçersiz” adlı eserini incelemeniz için gönderdi.",
+      "storyId": "olmayan-hikaye-id-999999",
+      "userRole": "teacher",
+      "createdAt": "2026-11-02T19:59:38.686Z"
+    },
+    {
+      "id": "notif-1793649472935-933m",
+      "read": false,
+      "type": "submission",
+      "title": "Yeni Değerlendirme Talebi",
+      "userId": "oskay42",
+      "message": "Cemre Yılmaz (7-A), “Geçersiz” adlı eserini incelemeniz için gönderdi.",
+      "storyId": "olmayan-hikaye-id-999999",
+      "userRole": "teacher",
+      "createdAt": "2026-11-02T19:57:52.935Z"
+    },
+    {
+      "id": "notif-1793649472154-6sw1",
+      "read": false,
+      "type": "submission",
+      "title": "Yeni Değerlendirme Talebi",
+      "userId": "oskay42",
+      "message": "Cemre Yılmaz (7-A), “Gece Yolculuğu ve Fener” adlı eserini incelemeniz için gönderdi.",
+      "storyId": "story-test-7415",
+      "userRole": "teacher",
+      "createdAt": "2026-11-02T19:57:52.154Z"
+    },
+    {
+      "id": "notif-1793550920053-b4uz",
+      "read": false,
+      "type": "submission",
+      "title": "Yeni Değerlendirme Talebi",
+      "userId": "hoca_7160",
+      "message": "Barış Özkan (8-A), “Yıldızların Ötesinde” adlı eserini incelemeniz için gönderdi.",
+      "storyId": "story-verif-1793550920044",
+      "userRole": "teacher",
+      "createdAt": "2026-11-01T16:35:20.053Z"
+    },
+    {
+      "id": "notif-1793550897963-kqcp",
+      "read": false,
+      "type": "submission",
+      "title": "Yeni Değerlendirme Talebi",
+      "userId": "oskay42",
+      "message": "Elif Demir (7-B), “Gölgedeki Sır (Tam Metin)” adlı eserini incelemeniz için gönderdi.",
+      "storyId": "story-test-1793550897950",
+      "userRole": "teacher",
+      "createdAt": "2026-11-01T16:34:57.963Z"
+    },
+    {
+      "id": "notif-1793547871117-h68h",
+      "read": false,
+      "type": "submission",
+      "title": "Yeni Değerlendirme Talebi",
+      "userId": "murathoca_6967",
+      "message": "Zeynep Öğrenci, “Kayıp Kütüphanenin Gizemi” adlı eserini incelemeniz için gönderdi.",
+      "storyId": "story-1793547871105",
+      "userRole": "teacher",
+      "createdAt": "2026-11-01T15:44:31.117Z"
+    },
+    {
+      "id": "notif-1793547837734-klfr",
+      "read": false,
+      "type": "submission",
+      "title": "Yeni Değerlendirme Talebi",
+      "userId": "oskay42",
+      "message": "Deneme Öğrenci, “Geleceğe Akan Zaman” adlı eserini incelemeniz için gönderdi.",
+      "storyId": "story-test-1793547837719",
+      "userRole": "teacher",
+      "createdAt": "2026-11-01T15:43:57.734Z"
+    },
+    {
+      "id": "notif-1793439505940-w3qc",
+      "read": false,
+      "type": "submission",
+      "title": "Yeni Değerlendirme Talebi",
+      "userId": "zeynep_hoca_5814",
+      "message": "Murat Çelik, “Gümüş Pusula” adlı eserini incelemeniz için gönderdi.",
+      "storyId": "story-1793439505919-kq2cv",
+      "userRole": "teacher",
+      "createdAt": "2026-10-31T09:38:25.940Z"
+    },
+    {
+      "id": "notif-1793437930452-izkn",
+      "read": true,
+      "type": "submission",
+      "title": "Yeni Değerlendirme Talebi",
+      "userId": "all_teachers",
+      "message": "OGR-5184, “deneme” adlı eserini incelemeniz için gönderdi.",
+      "storyId": "story-1793437735129",
+      "userRole": "teacher",
+      "createdAt": "2026-10-31T09:12:10.452Z"
+    },
     {
       "id": "notif-1793091800768-04vk",
       "read": false,

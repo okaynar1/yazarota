@@ -110,12 +110,34 @@ async function syncToSupabase(data: DatabaseSchema): Promise<void> {
         name: u.name,
         class_grade: u.classGrade || '5-A',
         pseudonym: u.pseudonym || null,
+        school: u.school || null,
+        teacher_code: u.teacherCode || null,
+        assigned_teacher_id: u.assignedTeacherId || null,
+        assigned_teacher_code: u.assignedTeacherCode || null,
+        assigned_teacher_name: u.assignedTeacherName || null,
         must_change_password: Boolean(u.mustChangePassword),
         password_changed_at: u.passwordChangedAt || null,
         created_at: u.createdAt || new Date().toISOString(),
       }));
       try {
-        await supabaseClient.from('users').upsert(userRows, { onConflict: 'id' });
+        const { error: userErr } = await supabaseClient.from('users').upsert(userRows, { onConflict: 'id' });
+        if (userErr && (userErr.message.includes('column') || userErr.code === '42703')) {
+          // Fallback to base columns if teacher_code or assigned_teacher_id columns are not yet in Supabase
+          const baseUserRows = data.users.map((u) => ({
+            id: u.id,
+            username: u.username,
+            password_hash: u.passwordHash,
+            salt: u.salt,
+            role: u.role,
+            name: u.name,
+            class_grade: u.classGrade || '5-A',
+            pseudonym: u.pseudonym || null,
+            must_change_password: Boolean(u.mustChangePassword),
+            password_changed_at: u.passwordChangedAt || null,
+            created_at: u.createdAt || new Date().toISOString(),
+          }));
+          await supabaseClient.from('users').upsert(baseUserRows, { onConflict: 'id' });
+        }
       } catch (e) {}
     }
 
@@ -140,11 +162,40 @@ async function syncToSupabase(data: DatabaseSchema): Promise<void> {
         task_id: s.taskId || null,
         test_type: s.testType || 'standard',
         published_work_id: s.publishedWorkId || null,
+        teacher_id: s.teacherId || null,
+        teacher_code: s.teacherCode || null,
+        teacher_name: s.teacherName || null,
         created_at: s.createdAt || new Date().toISOString(),
         updated_at: s.updatedAt || new Date().toISOString(),
       }));
       try {
-        await supabaseClient.from('stories').upsert(storyRows, { onConflict: 'id' });
+        const { error: storyErr } = await supabaseClient.from('stories').upsert(storyRows, { onConflict: 'id' });
+        if (storyErr) {
+          // Fallback to base columns if teacher columns are not yet in Supabase schema cache
+          const baseStoryRows = data.stories.map((s) => ({
+            id: s.id,
+            student_code: s.studentCode || null,
+            author_username: s.authorUsername || null,
+            author_name: s.authorName || null,
+            author_class: s.authorClass || null,
+            title: s.title || 'Başlıksız',
+            genre: s.genre || 'hikaye',
+            place: s.place || null,
+            time: s.time || null,
+            character: s.character || null,
+            surprise_card: s.surpriseCard || null,
+            status: s.status || 'draft',
+            current_version_number: s.currentVersionNumber || 1,
+            versions: s.versions || [],
+            class_id: s.classId || null,
+            task_id: s.taskId || null,
+            test_type: s.testType || 'standard',
+            published_work_id: s.publishedWorkId || null,
+            created_at: s.createdAt || new Date().toISOString(),
+            updated_at: s.updatedAt || new Date().toISOString(),
+          }));
+          await supabaseClient.from('stories').upsert(baseStoryRows, { onConflict: 'id' });
+        }
       } catch (e) {}
     }
 
@@ -210,6 +261,15 @@ async function pullFromSupabase(): Promise<boolean> {
 
     if (!error && data?.state) {
       const remoteState = data.state as DatabaseSchema;
+      // If local DB exists, only pull if remote state is strictly newer
+      if (fs.existsSync(DB_FILE)) {
+        try {
+          const localStats = fs.statSync(DB_FILE);
+          if (data.updated_at && new Date(data.updated_at).getTime() <= localStats.mtime.getTime()) {
+            return false;
+          }
+        } catch (e) {}
+      }
       ensureTeacherAccount(remoteState);
       try {
         if (!fs.existsSync(DATA_DIR)) {
@@ -788,7 +848,22 @@ const DEFAULT_DB: DatabaseSchema = {
   },
 };
 
-// Ensure default teacher exists and is in a valid state
+// Helper to generate a unique, collision-free teacher code (e.g. YZR-4821)
+function generateUniqueTeacherCode(users: any[]): string {
+  const existingCodes = new Set(
+    users
+      .filter((u) => u.teacherCode)
+      .map((u) => String(u.teacherCode).toUpperCase().trim())
+  );
+  let code = '';
+  do {
+    const num = Math.floor(1000 + Math.random() * 9000);
+    code = `YZR-${num}`;
+  } while (existingCodes.has(code));
+  return code;
+}
+
+// Ensure default teacher exists, has teacher code, and assign legacy students
 function ensureTeacherAccount(db: DatabaseSchema): boolean {
   if (!Array.isArray(db.users)) {
     db.users = [];
@@ -798,26 +873,28 @@ function ensureTeacherAccount(db: DatabaseSchema): boolean {
     (u) => u.role === 'teacher' || u.username.toLowerCase() === INITIAL_TEACHER_USERNAME.toLowerCase()
   );
 
+  let modified = false;
+
   // If teacher does not exist, create default teacher
   if (!teacher) {
     const salt = generateSalt();
     const passwordHash = hashPassword(INITIAL_TEACHER_PASSWORD, salt);
-    const newTeacher = {
+    teacher = {
       id: 'user-teacher-1',
       username: INITIAL_TEACHER_USERNAME,
       passwordHash,
       salt,
       role: 'teacher' as const,
       name: 'Türk Dili ve Edebiyatı Zümresi',
+      school: 'YAZAROTA Edebiyat Okulu',
+      teacherCode: 'YZR-1001',
       classGrade: 'Tüm Şubeler',
       mustChangePassword: true,
       createdAt: new Date().toISOString(),
     };
-    db.users.unshift(newTeacher);
-    return true;
+    db.users.unshift(teacher);
+    modified = true;
   }
-
-  let modified = false;
 
   // Ensure role is teacher
   if (teacher.role !== 'teacher') {
@@ -825,17 +902,30 @@ function ensureTeacherAccount(db: DatabaseSchema): boolean {
     modified = true;
   }
 
-  // If teacher has not changed password yet or has a legacy corrupted hash
-  if (!teacher.passwordChangedAt) {
-    const currentMatches = hashPassword(INITIAL_TEACHER_PASSWORD, teacher.salt) === teacher.passwordHash;
-    if (!currentMatches) {
-      const newSalt = generateSalt();
-      teacher.salt = newSalt;
-      teacher.passwordHash = hashPassword(INITIAL_TEACHER_PASSWORD, newSalt);
-      teacher.mustChangePassword = true;
+  // Ensure default teacher has a permanent code
+  if (!teacher.teacherCode) {
+    teacher.teacherCode = 'YZR-1001';
+    modified = true;
+  }
+
+  // Ensure all teachers have a unique permanent teacherCode
+  for (const u of db.users) {
+    if (u.role === 'teacher' && !u.teacherCode) {
+      u.teacherCode = u.username === 'ogretmen' ? 'YZR-1001' : generateUniqueTeacherCode(db.users);
       modified = true;
-    } else if (teacher.mustChangePassword === undefined) {
-      teacher.mustChangePassword = true;
+    }
+  }
+
+  // Ensure all existing students are mapped to default teacher so no existing student is orphaned
+  const defaultTeacherCode = teacher.teacherCode || 'YZR-1001';
+  const defaultTeacherId = teacher.id || 'user-teacher-1';
+  const defaultTeacherName = teacher.name || 'Türk Dili ve Edebiyatı Zümresi';
+
+  for (const u of db.users) {
+    if (u.role === 'student' && !u.assignedTeacherId) {
+      u.assignedTeacherId = defaultTeacherId;
+      u.assignedTeacherCode = defaultTeacherCode;
+      u.assignedTeacherName = defaultTeacherName;
       modified = true;
     }
   }
@@ -1039,14 +1129,115 @@ app.post(['/api/supabase/sync', '/supabase/sync'], async (_req: Request, res: Re
 
 // ================= AUTHENTICATION ROUTES =================
 
+// Register (Teacher)
+app.post(['/api/auth/register-teacher', '/auth/register-teacher'], (req: Request, res: Response) => {
+  const { name, username, password, school } = req.body;
+
+  if (!name || !username || !password) {
+    return res.status(400).json({
+      success: false,
+      error: 'Ad Soyad, kullanıcı adı ve şifre alanları zorunludur.',
+    });
+  }
+
+  const cleanUsername = username.trim().toLowerCase();
+  if (cleanUsername.length < 3) {
+    return res.status(400).json({
+      success: false,
+      error: 'Kullanıcı adı en az 3 karakterden oluşmalıdır.',
+    });
+  }
+
+  if (password.length < 6) {
+    return res.status(400).json({
+      success: false,
+      error: 'Öğretmen şifresi en az 6 karakter uzunluğunda olmalıdır.',
+    });
+  }
+
+  const db = readDb();
+  const existing = db.users.find((u) => u.username.toLowerCase() === cleanUsername);
+  if (existing) {
+    return res.status(409).json({
+      success: false,
+      error: 'Bu kullanıcı adı zaten kullanılmaktadır. Lütfen farklı bir kullanıcı adı seçiniz.',
+    });
+  }
+
+  const salt = generateSalt();
+  const passwordHash = hashPassword(password, salt);
+  const teacherCode = generateUniqueTeacherCode(db.users);
+
+  const newTeacher = {
+    id: 'user-teacher-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6),
+    username: cleanUsername,
+    passwordHash,
+    salt,
+    role: 'teacher' as const,
+    name: name.trim(),
+    school: school ? school.trim() : undefined,
+    teacherCode,
+    mustChangePassword: false, // Explicitly set by teacher at registration
+    createdAt: new Date().toISOString(),
+  };
+
+  db.users.push(newTeacher);
+  writeDb(db);
+
+  const token = createToken({
+    userId: newTeacher.id,
+    username: newTeacher.username,
+    role: newTeacher.role,
+    name: newTeacher.name,
+  });
+
+  res.json({
+    success: true,
+    token,
+    user: {
+      id: newTeacher.id,
+      username: newTeacher.username,
+      role: newTeacher.role,
+      name: newTeacher.name,
+      school: newTeacher.school,
+      teacherCode: newTeacher.teacherCode,
+      mustChangePassword: false,
+      createdAt: newTeacher.createdAt,
+    },
+  });
+});
+
 // Register (Student)
 app.post(['/api/auth/register', '/auth/register'], (req: Request, res: Response) => {
-  const { username, password, name, classGrade, pseudonym } = req.body;
+  const { username, password, name, classGrade, pseudonym, teacherCode } = req.body;
 
   if (!username || !password || !name) {
     return res.status(400).json({
       success: false,
       error: 'Kullanıcı adı, isim ve şifre alanları zorunludur.',
+    });
+  }
+
+  // Teacher Code is mandatory for student registration
+  if (!teacherCode || !teacherCode.trim()) {
+    return res.status(400).json({
+      success: false,
+      error: 'Öğretmen kodu alanı zorunludur. Lütfen öğretmeninizden aldığınız kodu giriniz.',
+    });
+  }
+
+  const cleanTeacherCode = teacherCode.trim().toUpperCase();
+  const db = readDb();
+
+  // Validate teacher code against registered teachers
+  const teacher = db.users.find(
+    (u) => u.role === 'teacher' && u.teacherCode && u.teacherCode.toUpperCase() === cleanTeacherCode
+  );
+
+  if (!teacher) {
+    return res.status(400).json({
+      success: false,
+      error: 'Geçersiz öğretmen kodu. Lütfen öğretmeninizden aldığınız kodu kontrol ediniz.',
     });
   }
 
@@ -1065,7 +1256,6 @@ app.post(['/api/auth/register', '/auth/register'], (req: Request, res: Response)
     });
   }
 
-  const db = readDb();
   const existing = db.users.find((u) => u.username.toLowerCase() === cleanUsername);
   if (existing) {
     return res.status(409).json({
@@ -1084,8 +1274,11 @@ app.post(['/api/auth/register', '/auth/register'], (req: Request, res: Response)
     salt,
     role: 'student' as const,
     name: name.trim(),
-    classGrade: classGrade ? classGrade.trim() : 'Genel',
+    classGrade: classGrade ? classGrade.trim() : '5-A',
     pseudonym: pseudonym ? pseudonym.trim() : name.trim(),
+    assignedTeacherId: teacher.id,
+    assignedTeacherCode: teacher.teacherCode,
+    assignedTeacherName: teacher.name,
     mustChangePassword: false,
     createdAt: new Date().toISOString(),
   };
@@ -1110,6 +1303,9 @@ app.post(['/api/auth/register', '/auth/register'], (req: Request, res: Response)
       name: newUser.name,
       classGrade: newUser.classGrade,
       pseudonym: newUser.pseudonym,
+      assignedTeacherId: newUser.assignedTeacherId,
+      assignedTeacherCode: newUser.assignedTeacherCode,
+      assignedTeacherName: newUser.assignedTeacherName,
       mustChangePassword: false,
       createdAt: newUser.createdAt,
     },
@@ -1118,7 +1314,7 @@ app.post(['/api/auth/register', '/auth/register'], (req: Request, res: Response)
 
 // Login (Student or Teacher)
 app.post(['/api/auth/login', '/auth/login'], (req: Request, res: Response) => {
-  const { username, password } = req.body;
+  const { username, password, role: expectedRole } = req.body;
 
   if (!username || !password) {
     return res.status(400).json({
@@ -1138,8 +1334,25 @@ app.post(['/api/auth/login', '/auth/login'], (req: Request, res: Response) => {
     });
   }
 
+  // Strict role separation enforcement
+  if (expectedRole === 'teacher' && user.role !== 'teacher') {
+    return res.status(403).json({
+      success: false,
+      error: 'Bu giriş alanı yalnızca öğretmenler içindir. Öğrenciler lütfen Öğrenci Girişi alanını kullanınız.',
+    });
+  }
+
+  if (expectedRole === 'student' && user.role !== 'student') {
+    return res.status(403).json({
+      success: false,
+      error: 'Bu giriş alanı yalnızca öğrenciler içindir. Öğretmenler lütfen Öğretmen Girişi alanını kullanınız.',
+    });
+  }
+
   const calculatedHash = hashPassword(password, user.salt);
-  if (calculatedHash !== user.passwordHash) {
+  const passwordMatches = calculatedHash === user.passwordHash;
+
+  if (!passwordMatches) {
     return res.status(401).json({
       success: false,
       error: 'Girdiğiniz kullanıcı adı veya şifre hatalı.',
@@ -1163,6 +1376,11 @@ app.post(['/api/auth/login', '/auth/login'], (req: Request, res: Response) => {
       name: user.name,
       classGrade: user.classGrade,
       pseudonym: user.pseudonym,
+      school: user.school,
+      teacherCode: user.teacherCode,
+      assignedTeacherId: user.assignedTeacherId,
+      assignedTeacherCode: user.assignedTeacherCode,
+      assignedTeacherName: user.assignedTeacherName,
       mustChangePassword: Boolean(user.mustChangePassword),
       createdAt: user.createdAt,
     },
@@ -1276,6 +1494,11 @@ app.get(['/api/auth/me', '/auth/me'], (req: Request, res: Response) => {
       name: user.name,
       classGrade: user.classGrade,
       pseudonym: user.pseudonym,
+      school: user.school,
+      teacherCode: user.teacherCode,
+      assignedTeacherId: user.assignedTeacherId,
+      assignedTeacherCode: user.assignedTeacherCode,
+      assignedTeacherName: user.assignedTeacherName,
       mustChangePassword: Boolean(user.mustChangePassword),
       createdAt: user.createdAt,
     },
@@ -1366,7 +1589,7 @@ app.get(['/api/stories', '/stories'], (req: Request, res: Response) => {
   let result = db.stories;
 
   // Access Control:
-  // Teachers can see everything.
+  // Teachers can see only stories assigned to them or their students.
   // Students can see only their own stories.
   // Unauthenticated guests only see their local studentCode or published works.
   if (authUser) {
@@ -1376,6 +1599,29 @@ app.get(['/api/stories', '/stories'], (req: Request, res: Response) => {
           s.authorUsername === authUser.username ||
           (studentCode && s.studentCode === studentCode)
       );
+    } else if (authUser.role === 'teacher') {
+      const currentTeacher = db.users.find((u) => u.id === authUser.userId);
+      const currentTeacherCode = currentTeacher?.teacherCode ? currentTeacher.teacherCode.toUpperCase().trim() : undefined;
+      const assignedStudentUsernames = new Set(
+        db.users
+          .filter(
+            (u) =>
+              u.role === 'student' &&
+              (u.assignedTeacherId === authUser.userId ||
+                (currentTeacherCode && u.assignedTeacherCode && u.assignedTeacherCode.toUpperCase().trim() === currentTeacherCode))
+          )
+          .map((u) => u.username)
+      );
+      const storyMap = new Map<string, any>();
+      result.forEach((s) => {
+        const isDirect = s.teacherId === authUser.userId;
+        const isCode = currentTeacherCode && s.teacherCode && s.teacherCode.toUpperCase().trim() === currentTeacherCode;
+        const isStudent = s.authorUsername && assignedStudentUsernames.has(s.authorUsername);
+        if (isDirect || isCode || isStudent) {
+          storyMap.set(s.id, s);
+        }
+      });
+      result = Array.from(storyMap.values());
     }
   } else if (studentCode) {
     result = result.filter((s) => s.studentCode === studentCode);
@@ -1431,6 +1677,11 @@ app.post(['/api/stories', '/stories'], (req: Request, res: Response) => {
     if (authorUser && authorUser.classGrade) {
       storyData.authorClass = authorUser.classGrade;
     }
+    if (authorUser && authorUser.assignedTeacherId) {
+      storyData.teacherId = authorUser.assignedTeacherId;
+      storyData.teacherCode = authorUser.assignedTeacherCode;
+      storyData.teacherName = authorUser.assignedTeacherName;
+    }
   }
 
   if (!storyData.status) {
@@ -1464,6 +1715,24 @@ app.post(['/api/stories', '/stories'], (req: Request, res: Response) => {
     storyData.authorUsername = storyData.authorUsername || existing.authorUsername;
     storyData.authorName = storyData.authorName || existing.authorName;
     storyData.studentCode = storyData.studentCode || existing.studentCode;
+    storyData.teacherId = storyData.teacherId || existing.teacherId;
+    storyData.teacherCode = storyData.teacherCode || existing.teacherCode;
+    storyData.teacherName = storyData.teacherName || existing.teacherName;
+
+    // Preserve submitted workflow status: never allow auto-save or standard save to revert back to draft
+    const isWorkflowState = [
+      'pending_teacher',
+      'revision_requested',
+      'resubmitted',
+      'approved',
+      'nominated_for_magazine',
+      'published',
+      'completed',
+    ].includes(existing.status);
+
+    if (isWorkflowState && (!storyData.status || storyData.status === 'draft')) {
+      storyData.status = existing.status;
+    }
 
     db.stories[existingIndex] = { ...existing, ...storyData };
   } else {
@@ -1497,34 +1766,135 @@ app.delete(['/api/stories/:id', '/stories/:id'], (req: Request, res: Response) =
 });
 
 // Student Submits Story to Teacher ("Öğretmene Gönder")
-app.post(['/api/stories/:id/submit-to-teacher', '/stories/:id/submit-to-teacher'], (req: Request, res: Response) => {
+app.post(['/api/stories/:id/submit-to-teacher', '/stories/:id/submit-to-teacher'], async (req: Request, res: Response) => {
   const authUser = getUserFromReq(req);
-  const db = readDb();
-  const story = db.stories.find((s) => s.id === req.params.id);
-
-  if (!story) {
-    return res.status(404).json({ success: false, error: 'Hikâye bulunamadı.' });
+  if (!authUser || authUser.role !== 'student') {
+    return res.status(401).json({
+      success: false,
+      error: 'Yazınızı öğretmeninize göndermek için lütfen öğrenci hesabınızla giriş yapınız.',
+      requireLogin: true,
+    });
   }
 
-  // Check whether it's an initial submission or resubmission after revisions
-  const isResubmission = story.status === 'revision_requested' || (story.versions && story.versions.length > 1);
-  story.status = isResubmission ? 'resubmitted' : 'pending_teacher';
-  story.updatedAt = new Date().toISOString();
+  try {
+    const db = readDb();
+    const storyPayload = req.body || {};
+    let story = db.stories.find((s) => s.id === req.params.id);
+    const student = db.users.find((u) => u.id === authUser.userId || u.username === authUser.username);
 
-  // Create in-app notification for teachers
-  const studentName = authUser?.name || story.authorName || story.studentCode || 'Bir öğrenci';
-  addNotification(
-    db,
-    'all_teachers',
-    'teacher',
-    isResubmission ? 'Yeniden Düzenlenen Yazı Gönderildi' : 'Yeni Değerlendirme Talebi',
-    `${studentName}, “${story.title || 'Başlıksız'}” adlı eserini incelemeniz için gönderdi.`,
-    'submission',
-    story.id
-  );
+    if (!story) {
+      return res.status(404).json({ success: false, error: 'Gönderilecek hikâye bulunamadı.' });
+    }
 
-  writeDb(db);
-  res.json({ success: true, story, message: 'Yazınız başarıyla öğretmeninize iletildi!' });
+    // Synchronize latest content from payload if provided
+    if (storyPayload.title) {
+      story.title = storyPayload.title;
+    }
+    if (Array.isArray(storyPayload.versions) && storyPayload.versions.length > 0) {
+      story.versions = storyPayload.versions;
+    } else if (storyPayload.content && Array.isArray(story.versions) && story.versions.length > 0) {
+      const latestV = story.versions[story.versions.length - 1];
+      latestV.content = storyPayload.content;
+      if (storyPayload.title) latestV.title = storyPayload.title;
+      latestV.wordCount = storyPayload.content.trim().split(/\s+/).filter(Boolean).length;
+      latestV.characterCount = storyPayload.content.length;
+    }
+    if (storyPayload.studentNote) {
+      story.studentNote = storyPayload.studentNote;
+    }
+
+    // Set author and middle school class metadata
+    if (student) {
+      story.authorUsername = student.username;
+      story.authorName = student.name;
+      story.authorClass = student.classGrade || story.authorClass || '5-A';
+    }
+
+    // Find student's assigned teacher
+    let teacher = db.users.find(
+      (u) =>
+        u.role === 'teacher' &&
+        ((student?.assignedTeacherId && u.id === student.assignedTeacherId) ||
+          (student?.assignedTeacherCode &&
+            u.teacherCode &&
+            u.teacherCode.toUpperCase().trim() === student.assignedTeacherCode.toUpperCase().trim()))
+    );
+
+    // If not found by student record, check story's existing teacher id or code
+    if (!teacher && (story.teacherId || story.teacherCode)) {
+      teacher = db.users.find(
+        (u) =>
+          u.role === 'teacher' &&
+          ((story.teacherId && u.id === story.teacherId) ||
+            (story.teacherCode &&
+              u.teacherCode &&
+              u.teacherCode.toUpperCase().trim() === story.teacherCode.toUpperCase().trim()))
+      );
+    }
+
+    // Fallback to first teacher in db
+    if (!teacher) {
+      teacher = db.users.find((u) => u.role === 'teacher');
+    }
+
+    if (teacher) {
+      story.teacherId = teacher.id;
+      story.teacherCode = teacher.teacherCode;
+      story.teacherName = teacher.name;
+      if (student) {
+        student.assignedTeacherId = teacher.id;
+        student.assignedTeacherCode = teacher.teacherCode;
+        student.assignedTeacherName = teacher.name;
+      }
+    }
+
+    // Check whether it's an initial submission or resubmission after teacher requested revisions
+    const isResubmission =
+      story.status === 'revision_requested' ||
+      (Array.isArray(story.versions) && story.versions.some((v: any) => v.teacherFeedback));
+
+    story.status = isResubmission ? 'resubmitted' : 'pending_teacher';
+    story.submittedAt = new Date().toISOString();
+    story.updatedAt = new Date().toISOString();
+
+    // Create in-app notification targeted to assigned teacher
+    const studentName = authUser?.name || story.authorName || story.studentCode || 'Bir öğrenci';
+    const targetRecipient = teacher ? teacher.username : 'all_teachers';
+
+    addNotification(
+      db,
+      targetRecipient,
+      'teacher',
+      isResubmission ? 'Yeniden Düzenlenen Yazı Gönderildi' : 'Yeni Değerlendirme Talebi',
+      `${studentName} (${story.authorClass || 'Öğrenci'}), “${story.title || 'Başlıksız'}” adlı eserini incelemeniz için gönderdi.`,
+      'submission',
+      story.id
+    );
+
+    // Save to local database
+    writeDb(db);
+
+    // Guarantee persistence to Supabase before sending HTTP response
+    if (supabaseClient) {
+      try {
+        await syncToSupabase(db);
+      } catch (cloudErr) {
+        console.warn('Supabase sync notice during submission:', cloudErr);
+      }
+    }
+
+    return res.json({
+      success: true,
+      story,
+      message: 'Yazınız öğretmeninize başarıyla gönderilmiştir.',
+    });
+  } catch (err: any) {
+    console.error('Error in submit-to-teacher:', err);
+    return res.status(500).json({
+      success: false,
+      error: 'Yazınız öğretmeninize gönderilirken bir hata oluştu. Lütfen tekrar deneyiniz.',
+    });
+  }
 });
 
 // Teacher Evaluates Story with 10-Criteria Analytic Rubric
@@ -1788,21 +2158,88 @@ app.post(['/api/magazine/issues', '/magazine/issues'], (req: Request, res: Respo
   res.json({ success: true, issue: newIssue });
 });
 
-// ================= TEACHER DASHBOARD REAL STATISTICS =================
+// ================= TEACHER DASHBOARD REAL STATISTICS & STUDENT MANAGEMENT =================
+
+// Get students linked to this teacher
+app.get(['/api/teacher/students', '/teacher/students'], (req: Request, res: Response) => {
+  const authUser = requireActiveTeacher(req, res);
+  if (!authUser) return;
+
+  const db = readDb();
+  const currentTeacher = db.users.find((u) => u.id === authUser.userId);
+  const currentTeacherCode = currentTeacher?.teacherCode;
+
+  const students = (db.users || [])
+    .filter(
+      (u) =>
+        u.role === 'student' &&
+        (u.assignedTeacherId === authUser.userId ||
+          (currentTeacherCode && u.assignedTeacherCode === currentTeacherCode))
+    )
+    .map((u) => {
+      const studentStories = (db.stories || []).filter((s) => s.authorUsername === u.username);
+      return {
+        id: u.id,
+        username: u.username,
+        name: u.name,
+        classGrade: u.classGrade || '5-A',
+        pseudonym: u.pseudonym || null,
+        createdAt: u.createdAt,
+        assignedTeacherCode: u.assignedTeacherCode,
+        assignedTeacherName: u.assignedTeacherName,
+        storyCount: studentStories.length,
+        submittedCount: studentStories.filter((s) => s.status !== 'draft').length,
+        approvedCount: studentStories.filter(
+          (s) => s.status === 'approved' || s.status === 'published' || s.status === 'nominated_for_magazine'
+        ).length,
+      };
+    });
+
+  res.json({
+    success: true,
+    students,
+    teacherCode: currentTeacherCode || 'YZR-1001',
+    teacherName: currentTeacher?.name,
+  });
+});
 
 app.get(['/api/teacher/dashboard-stats', '/teacher/dashboard-stats'], (req: Request, res: Response) => {
   const authUser = requireActiveTeacher(req, res);
   if (!authUser) return;
 
   const db = readDb();
-  const allStories = db.stories || [];
+  const currentTeacher = db.users.find((u) => u.id === authUser.userId);
+  const currentTeacherCode = currentTeacher?.teacherCode ? currentTeacher.teacherCode.toUpperCase().trim() : undefined;
 
-  const totalSubmitted = allStories.filter((s) => s.status !== 'draft').length;
-  const pendingEvaluation = allStories.filter((s) => s.status === 'pending_teacher').length;
-  const revisionRequested = allStories.filter((s) => s.status === 'revision_requested').length;
-  const resubmitted = allStories.filter((s) => s.status === 'resubmitted').length;
-  const approved = allStories.filter((s) => s.status === 'approved' || s.status === 'nominated_for_magazine').length;
-  const publishedInMagazine = (db.publishedWorks || []).length;
+  const assignedStudents = (db.users || []).filter(
+    (u) =>
+      u.role === 'student' &&
+      (u.assignedTeacherId === authUser.userId ||
+        (currentTeacherCode && u.assignedTeacherCode && u.assignedTeacherCode.toUpperCase().trim() === currentTeacherCode))
+  );
+  const assignedStudentUsernames = new Set(assignedStudents.map((u) => u.username));
+
+  // Stories that belong to this teacher or were written by their assigned students (deduplicated by ID)
+  const teacherStoryMap = new Map<string, any>();
+  (db.stories || []).forEach((s) => {
+    const isDirect = s.teacherId === authUser.userId;
+    const isCode = currentTeacherCode && s.teacherCode && s.teacherCode.toUpperCase().trim() === currentTeacherCode;
+    const isStudent = s.authorUsername && assignedStudentUsernames.has(s.authorUsername);
+    if (isDirect || isCode || isStudent) {
+      teacherStoryMap.set(s.id, s);
+    }
+  });
+
+  const teacherStories = Array.from(teacherStoryMap.values());
+
+  const totalSubmitted = teacherStories.filter((s) => s.status && s.status !== 'draft').length;
+  const pendingEvaluation = teacherStories.filter((s) => s.status === 'pending_teacher').length;
+  const revisionRequested = teacherStories.filter((s) => s.status === 'revision_requested').length;
+  const resubmitted = teacherStories.filter((s) => s.status === 'resubmitted').length;
+  const approved = teacherStories.filter((s) => s.status === 'approved' || s.status === 'nominated_for_magazine').length;
+  const publishedInMagazine = (db.publishedWorks || []).filter((w) =>
+    assignedStudentUsernames.has(w.studentUsername)
+  ).length;
 
   res.json({
     success: true,
@@ -1813,7 +2250,7 @@ app.get(['/api/teacher/dashboard-stats', '/teacher/dashboard-stats'], (req: Requ
       resubmitted, // Yeniden Değerlendirilecekler
       approved, // Yayına Hazır / Onaylanan
       publishedInMagazine, // Genç Kalemler Dergisi'ndeki Yazılar
-      totalStudents: (db.users || []).filter((u) => u.role === 'student').length,
+      totalStudents: assignedStudents.length,
       totalClasses: (db.classes || []).length,
     },
   });

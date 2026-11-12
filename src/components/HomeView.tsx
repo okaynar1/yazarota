@@ -14,19 +14,23 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { GENRES } from '../data/writingData';
-import { GenreType } from '../types';
+import { GenreType, User } from '../types';
 
 interface HomeViewProps {
   onStartNewStory: (preSelectedGenre?: GenreType) => void;
   onNavigateTab: (tab: any) => void;
   savedStoriesCount: number;
+  currentUser?: User | null;
 }
 
 export const HomeView: React.FC<HomeViewProps> = ({
   onStartNewStory,
   onNavigateTab,
   savedStoriesCount,
+  currentUser,
 }) => {
+  const isTeacher = currentUser?.role === 'teacher';
+
   const getGenreIcon = (iconName: string) => {
     switch (iconName) {
       case 'BookOpen':
@@ -61,26 +65,35 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </div>
 
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight font-display leading-tight text-slate-100">
-            Bugün nasıl bir{' '}
-            <span className="bg-gradient-to-r from-teal-300 via-cyan-200 to-amber-200 bg-clip-text text-transparent">
-              hikâye
-            </span>{' '}
-            yazacaksın?
+            {isTeacher ? 'Öğretmen Değerlendirme & İnceleme Kurulu' : 'Bugün nasıl bir hikâye yazacaksın?'}
           </h1>
 
           <p className="text-lg sm:text-xl text-slate-300 font-serif-literary leading-relaxed">
-            Bir tür seç, rastgele gelen ipuçlarını keşfet ve kendi hikâyeni oluştur. Her yeni deneme seni daha güçlü bir yazara dönüştürür.
+            {isTeacher
+              ? 'Öğrencilerinizin gönderdiği eserleri analitik yazma rubriği ile inceleyin, geri bildirimlerinizi iletin ve seçkin eserleri okul dergisinde yayımlayın.'
+              : 'Bir tür seç, rastgele gelen ipuçlarını keşfet ve kendi hikâyeni oluştur. Her yeni deneme seni daha güçlü bir yazara dönüştürür.'}
           </p>
 
           <div className="flex flex-wrap items-center gap-4 pt-2">
-            <button
-              onClick={() => onStartNewStory()}
-              className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-400 hover:to-cyan-400 text-slate-950 font-bold text-base shadow-lg shadow-teal-500/25 hover:shadow-teal-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
-            >
-              <Sparkles className="w-5 h-5" />
-              <span>Yeni Hikâye Oluştur</span>
-              <ArrowRight className="w-4 h-4 ml-1" />
-            </button>
+            {isTeacher ? (
+              <button
+                onClick={() => onNavigateTab('teacher')}
+                className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-base shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+              >
+                <GraduationCap className="w-5 h-5 text-slate-950" />
+                <span>Öğretmen Paneline Git</span>
+                <ArrowRight className="w-4 h-4 ml-1" />
+              </button>
+            ) : (
+              <button
+                onClick={() => onStartNewStory()}
+                className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-400 hover:to-cyan-400 text-slate-950 font-bold text-base shadow-lg shadow-teal-500/25 hover:shadow-teal-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+              >
+                <Sparkles className="w-5 h-5" />
+                <span>Yeni Hikâye Oluştur</span>
+                <ArrowRight className="w-4 h-4 ml-1" />
+              </button>
+            )}
 
             <button
               onClick={() => onNavigateTab('magazine')}
@@ -98,7 +111,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               <span>Edebiyat Rehberi</span>
             </button>
 
-            {savedStoriesCount > 0 && (
+            {!isTeacher && savedStoriesCount > 0 && (
               <button
                 onClick={() => onNavigateTab('stories')}
                 className="inline-flex items-center gap-2 px-4 py-3.5 rounded-xl text-slate-300 hover:text-white text-sm font-medium transition-colors"
